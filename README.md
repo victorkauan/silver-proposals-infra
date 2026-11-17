@@ -29,6 +29,7 @@ environments differ only in their inputs.
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.9, < 2.0`
+- [tflint](https://github.com/terraform-linters/tflint) (Git hooks)
 
 ## Quick start
 
@@ -37,6 +38,18 @@ cd environments/staging
 terraform init
 terraform validate
 ```
+
+## Contributing
+
+Install the Git hooks before your first commit:
+
+```bash
+uv tool install pre-commit   # or: pipx install pre-commit
+pre-commit install
+```
+
+Branch, commit, and pull request conventions are in [CONTRIBUTING.md](CONTRIBUTING.md).
+Security issues: see [SECURITY.md](SECURITY.md).
 
 ## Documentation
 
