@@ -67,6 +67,9 @@ jobs:
   apply-shared:
     needs: check-shared
     if: needs.check-shared.outputs.changes == 'true'
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/terraform-apply.yml
     with:
       root: shared
@@ -75,6 +78,9 @@ jobs:
   apply-staging:
     needs: [check-shared, apply-shared]
     if: always() && needs.check-shared.result == 'success' && (needs.apply-shared.result == 'success' || needs.apply-shared.result == 'skipped')
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/terraform-apply.yml
     with:
       root: staging
@@ -82,6 +88,9 @@ jobs:
 
   apply-prod:
     needs: apply-staging
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/terraform-apply.yml
     with:
       root: prod
