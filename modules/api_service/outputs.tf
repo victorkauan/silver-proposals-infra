@@ -1,0 +1,39 @@
+output "cluster_name" {
+  description = "ECS cluster of the environment (backend deploy target)."
+  value       = aws_ecs_cluster.this.name
+}
+
+output "service_name" {
+  description = "ECS service of the API (backend deploy target)."
+  value       = aws_ecs_service.api.name
+}
+
+output "task_definition_family" {
+  description = "Task definition family of the API, for new revisions on deploy."
+  value       = aws_ecs_task_definition.api.family
+}
+
+output "task_role_arn" {
+  description = "Role the API runs with (Bedrock access, no keys)."
+  value       = aws_iam_role.task.arn
+}
+
+output "execution_role_arn" {
+  description = "Role ECS uses to pull the image, read the secrets, and write logs."
+  value       = aws_iam_role.execution.arn
+}
+
+output "app_secret_arn" {
+  description = "Secrets Manager secret with the API's JWT secret and database URL."
+  value       = aws_secretsmanager_secret.app.arn
+}
+
+output "log_group_name" {
+  description = "CloudWatch log group of the API."
+  value       = aws_cloudwatch_log_group.api.name
+}
+
+output "url" {
+  description = "Public URL of the API."
+  value       = "https://${var.api_host_name}"
+}

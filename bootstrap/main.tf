@@ -133,16 +133,42 @@ data "aws_iam_policy_document" "state" {
     }
   }
 
-  # Each environment's CI role may only reach its own state and lock file, never the other
-  # environment's or the bootstrap state.
+  # Each environment's CI role may only write its own state and lock file.
   dynamic "statement" {
     for_each = toset(var.environments)
 
     content {
-      sid           = "DenyCrossEnvironment${title(statement.value)}"
+      sid           = "DenyCrossEnvironmentWrite${title(statement.value)}"
       effect        = "Deny"
-      actions       = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject"]
+      actions       = ["s3:PutObject", "s3:DeleteObject"]
       not_resources = ["${aws_s3_bucket.state.arn}/${statement.value}/*"]
+
+      principals {
+        type        = "*"
+        identifiers = ["*"]
+      }
+
+      condition {
+        test     = "ArnLike"
+        variable = "aws:PrincipalArn"
+        values   = ["${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}"]
+      }
+    }
+  }
+
+  # Each environment's CI role may read its own state and the shared state (network, load balancer,
+  # database outputs), but never the other environment's or the bootstrap state.
+  dynamic "statement" {
+    for_each = toset(var.environments)
+
+    content {
+      sid     = "DenyCrossEnvironmentRead${title(statement.value)}"
+      effect  = "Deny"
+      actions = ["s3:GetObject", "s3:GetObjectVersion"]
+      not_resources = distinct([
+        "${aws_s3_bucket.state.arn}/${statement.value}/*",
+        "${aws_s3_bucket.state.arn}/${var.shared_state_prefix}/*",
+      ])
 
       principals {
         type        = "*"
