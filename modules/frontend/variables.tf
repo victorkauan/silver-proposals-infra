@@ -36,4 +36,10 @@ variable "github_oidc_provider_arn" {
 variable "github_subject_prefix" {
   description = "OIDC subject prefix of the frontend repository (immutable form, with numeric IDs)."
   type        = string
+
+  # The deploy role must trust exactly one repository: no wildcards and no extra subject parts.
+  validation {
+    condition     = can(regex("^repo:[^:*?/]+/[^:*?/]+$", var.github_subject_prefix))
+    error_message = "github_subject_prefix must be repo:<owner>/<repository> (optionally with @ids), without wildcards."
+  }
 }

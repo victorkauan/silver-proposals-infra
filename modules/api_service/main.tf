@@ -405,6 +405,7 @@ resource "cloudflare_dns_record" "api" {
 # ---------------------------------------------------------------- deploy role (backend pipeline)
 
 data "aws_iam_policy_document" "deploy_assume" {
+  #checkov:skip=CKV_AWS_358:The subject is one exact repository and environment, enforced by the validation on github_subject_prefix (no wildcards); Checkov cannot resolve the module variable.
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
