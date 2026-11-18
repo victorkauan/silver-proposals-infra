@@ -57,6 +57,7 @@ resource "aws_s3_bucket_versioning" "state" {
   }
 }
 
+#trivy:ignore:AWS-0132 SSE-S3 is enough in a single account; a customer-managed KMS key adds cost without extra protection.
 resource "aws_s3_bucket_server_side_encryption_configuration" "state" {
   bucket = aws_s3_bucket.state.id
 
@@ -151,7 +152,7 @@ data "aws_iam_policy_document" "state" {
       condition {
         test     = "ArnLike"
         variable = "aws:PrincipalArn"
-        values   = ["${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}"]
+        values   = ["${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}", "${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}-*"]
       }
     }
   }
@@ -178,7 +179,7 @@ data "aws_iam_policy_document" "state" {
       condition {
         test     = "ArnLike"
         variable = "aws:PrincipalArn"
-        values   = ["${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}"]
+        values   = ["${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}", "${local.account_arn}:role/${var.ci_role_prefix}-${statement.value}-*"]
       }
     }
   }

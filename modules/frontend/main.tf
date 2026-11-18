@@ -54,6 +54,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "site" {
   depends_on = [aws_s3_bucket_versioning.site]
 }
 
+#trivy:ignore:AWS-0132 Public static assets; SSE-S3 is enough.
 resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
   bucket = aws_s3_bucket.site.id
 
@@ -79,6 +80,7 @@ data "aws_cloudfront_response_headers_policy" "security" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
+#trivy:ignore:AWS-0011 No WAF in v1 (cost); the site is static and read-only.
 resource "aws_cloudfront_distribution" "site" {
   #checkov:skip=CKV_AWS_68:No WAF in v1 (cost); the site is static and read-only.
   #checkov:skip=CKV_AWS_86:Access logging is covered by the observability work.
@@ -187,4 +189,64 @@ resource "cloudflare_dns_record" "site" {
   ttl     = 300
   proxied = false
   comment = "Frontend (managed by Terraform)"
+}
+
+# ---------------------------------------------------------------- deploy role (frontend pipeline)
+
+data "aws_iam_policy_document" "deploy_assume" {
+  #checkov:skip=CKV_AWS_358:The subject is one exact repository and environment, enforced by the validation on github_subject_prefix (no wildcards); Checkov cannot resolve the module variable.
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [var.github_oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["${var.github_subject_prefix}:environment:${var.environment}"]
+    }
+  }
+}
+
+resource "aws_iam_role" "deploy" {
+  name                 = "silver-proposals-${var.environment}-deploy-frontend"
+  description          = "Frontend deploy to ${var.environment} from GitHub Actions (OIDC)"
+  assume_role_policy   = data.aws_iam_policy_document.deploy_assume.json
+  permissions_boundary = var.permissions_boundary_arn
+  max_session_duration = 3600
+}
+
+data "aws_iam_policy_document" "deploy" {
+  statement {
+    sid       = "ListBuild"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.site.arn]
+  }
+
+  statement {
+    sid       = "PublishBuild"
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.site.arn}/*"]
+  }
+
+  statement {
+    sid       = "InvalidateCache"
+    actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"]
+    resources = [aws_cloudfront_distribution.site.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "deploy" {
+  name   = "deploy-frontend"
+  role   = aws_iam_role.deploy.id
+  policy = data.aws_iam_policy_document.deploy.json
 }

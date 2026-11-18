@@ -9,3 +9,4 @@
 | [AWS architecture](architecture/aws.md) | Explanation |
 | [Apply the AWS environments](runbooks/apply-environments.md) | Runbook |
 | [Outputs contract](reference/outputs-contract.md) | Reference |
+| [CI/CD](reference/ci-cd.md) | Reference |

@@ -33,3 +33,15 @@ variable "noncurrent_version_retention_days" {
   type        = number
   default     = 90
 }
+
+variable "github_infra_subject_prefix" {
+  description = "OIDC subject prefix of the infra repository. The account uses immutable subjects (owner and repository with their numeric IDs), so a renamed or recreated repository is never trusted. Read it with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub"
+  type        = string
+  default     = "repo:victorkauan@71532562/silver-proposals-infra@1460483036"
+}
+
+variable "workload_boundary_name" {
+  description = "Name of the permissions boundary every application role must carry."
+  type        = string
+  default     = "silver-proposals-workload-boundary"
+}

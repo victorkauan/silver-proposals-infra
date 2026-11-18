@@ -17,3 +17,29 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare zone of the host name."
   type        = string
 }
+
+variable "permissions_boundary_arn" {
+  description = "Permissions boundary attached to every IAM role this module creates."
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name, used in the deploy role and its OIDC subject."
+  type        = string
+}
+
+variable "github_oidc_provider_arn" {
+  description = "GitHub Actions OIDC provider trusted by the deploy role."
+  type        = string
+}
+
+variable "github_subject_prefix" {
+  description = "OIDC subject prefix of the frontend repository (immutable form, with numeric IDs)."
+  type        = string
+
+  # The deploy role must trust exactly one repository: no wildcards and no extra subject parts.
+  validation {
+    condition     = can(regex("^repo:[^:*?/]+/[^:*?/]+$", var.github_subject_prefix))
+    error_message = "github_subject_prefix must be repo:<owner>/<repository> (optionally with @ids), without wildcards."
+  }
+}

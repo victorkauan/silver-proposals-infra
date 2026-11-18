@@ -74,8 +74,9 @@ data "aws_iam_policy_document" "ecs_tasks_assume" {
 }
 
 resource "aws_iam_role" "execution" {
-  name               = "${local.name}-api-execution"
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+  name                 = "${local.name}-api-execution"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume.json
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 resource "aws_iam_role_policy_attachment" "execution" {
@@ -99,8 +100,9 @@ resource "aws_iam_role_policy" "execution_secrets" {
 
 # The application authenticates to Bedrock with this role; there are no AI keys anywhere.
 resource "aws_iam_role" "task" {
-  name               = "${local.name}-api-task"
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+  name                 = "${local.name}-api-task"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume.json
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 data "aws_iam_policy_document" "task_bedrock" {
@@ -148,6 +150,7 @@ resource "aws_vpc_security_group_ingress_rule" "task_from_alb" {
   to_port                      = var.container_port
 }
 
+#trivy:ignore:AWS-0104 Only 443/TCP: without a NAT Gateway the tasks reach AWS APIs (Bedrock, ECR, Secrets Manager, CloudWatch) through the internet gateway.
 resource "aws_vpc_security_group_egress_rule" "task_https" {
   security_group_id = aws_security_group.task.id
   description       = "HTTPS to AWS APIs (Bedrock, ECR, Secrets Manager, CloudWatch) through the internet gateway"
@@ -308,6 +311,12 @@ resource "aws_ecs_service" "api" {
     rollback = true
   }
 
+  # The backend pipeline rolls out images: it registers a revision from the latest one (which carries
+  # Terraform's configuration) with the new image, and sets the task count. Terraform must not undo it.
+  lifecycle {
+    ignore_changes = [task_definition, desired_count]
+  }
+
   depends_on = [aws_lb_listener_rule.api, terraform_data.database_setup]
 }
 
@@ -391,4 +400,112 @@ resource "cloudflare_dns_record" "api" {
   ttl     = 300
   proxied = false
   comment = "API (managed by Terraform)"
+}
+
+# ---------------------------------------------------------------- deploy role (backend pipeline)
+
+data "aws_iam_policy_document" "deploy_assume" {
+  #checkov:skip=CKV_AWS_358:The subject is one exact repository and environment, enforced by the validation on github_subject_prefix (no wildcards); Checkov cannot resolve the module variable.
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [var.github_oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    # Only jobs in this environment of the backend repository (protected in GitHub) can deploy.
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["${var.github_subject_prefix}:environment:${var.environment}"]
+    }
+  }
+}
+
+resource "aws_iam_role" "deploy" {
+  name                 = "${local.name}-deploy-backend"
+  description          = "Backend deploy to ${var.environment} from GitHub Actions (OIDC)"
+  assume_role_policy   = data.aws_iam_policy_document.deploy_assume.json
+  permissions_boundary = var.permissions_boundary_arn
+  max_session_duration = 3600
+}
+
+data "aws_iam_policy_document" "deploy" {
+  statement {
+    sid       = "EcrLogin"
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "ReadImages"
+    actions   = ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:DescribeImages", "ecr:GetDownloadUrlForLayer"]
+    resources = [var.image_repository_arn]
+  }
+
+  # Only staging builds and pushes images; production promotes an image that staging already ran.
+  dynamic "statement" {
+    for_each = var.allow_image_push ? [1] : []
+
+    content {
+      sid       = "PushImages"
+      actions   = ["ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage"]
+      resources = [var.image_repository_arn]
+    }
+  }
+
+  statement {
+    sid       = "TaskDefinitions"
+    actions   = ["ecs:DescribeTaskDefinition", "ecs:RegisterTaskDefinition"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "RollOutService"
+    actions   = ["ecs:UpdateService", "ecs:DescribeServices"]
+    resources = ["arn:${local.partition}:ecs:${var.region}:${local.account_id}:service/${local.name}/api"]
+  }
+
+  statement {
+    sid       = "RunMigrations"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:${local.partition}:ecs:${var.region}:${local.account_id}:task-definition/${local.name}-api:*"]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "ecs:cluster"
+      values   = [aws_ecs_cluster.this.arn]
+    }
+  }
+
+  statement {
+    sid       = "WatchMigrations"
+    actions   = ["ecs:DescribeTasks"]
+    resources = ["arn:${local.partition}:ecs:${var.region}:${local.account_id}:task/${local.name}/*"]
+  }
+
+  statement {
+    sid       = "PassTaskRoles"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution.arn, aws_iam_role.task.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "deploy" {
+  name   = "deploy-backend"
+  role   = aws_iam_role.deploy.id
+  policy = data.aws_iam_policy_document.deploy.json
 }

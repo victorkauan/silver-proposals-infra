@@ -52,5 +52,20 @@ variable "shared" {
     database_security_group_id = string
     database_master_secret_arn = string
     ecr_repository_url         = string
+    ecr_repository_arn         = string
   })
+}
+
+# The account uses immutable OIDC subjects (owner and repository with their numeric IDs).
+# Read them with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub
+variable "backend_github_subject_prefix" {
+  description = "OIDC subject prefix of the backend repository."
+  type        = string
+  default     = "repo:victorkauan@71532562/silver-proposals-backend@1460360885"
+}
+
+variable "frontend_github_subject_prefix" {
+  description = "OIDC subject prefix of the frontend repository."
+  type        = string
+  default     = "repo:victorkauan@71532562/silver-proposals-frontend@1460352038"
 }
