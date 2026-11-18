@@ -5,7 +5,7 @@ variable "monthly_budget_usd" {
 }
 
 variable "budget_alert_emails" {
-  description = "E-mail addresses for the budget alerts. Set TF_VAR_budget_alert_emails (JSON list) or a git-ignored *.tfvars file; never commit them."
+  description = "E-mail addresses for the budget and alarm notifications. Set TF_VAR_budget_alert_emails (JSON list) or a git-ignored *.tfvars file; never commit them."
   type        = list(string)
   sensitive   = true
 }

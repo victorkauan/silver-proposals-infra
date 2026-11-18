@@ -57,3 +57,18 @@ output "ecr_repository_arn" {
   description = "ARN of the backend image repository."
   value       = module.ecr.repository_arn
 }
+
+output "alerts_topic_arn" {
+  description = "SNS topic of all alarms."
+  value       = aws_sns_topic.alerts.arn
+}
+
+output "alb_arn_suffix" {
+  description = "ARN suffix of the shared load balancer, for CloudWatch metrics."
+  value       = module.alb.arn_suffix
+}
+
+output "db_instance_identifier" {
+  description = "Identifier of the shared database instance, for CloudWatch metrics."
+  value       = module.database.identifier
+}

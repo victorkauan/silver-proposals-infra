@@ -12,3 +12,8 @@ output "security_group_id" {
   description = "Security group of the load balancer, the only allowed source of task traffic."
   value       = aws_security_group.alb.id
 }
+
+output "arn_suffix" {
+  description = "ARN suffix of the load balancer, for CloudWatch metrics."
+  value       = aws_lb.this.arn_suffix
+}
