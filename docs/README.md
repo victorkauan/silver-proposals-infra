@@ -8,5 +8,6 @@
 | [ADR-0003: Shared load balancer and database](adr/0003-share-the-load-balancer-and-database-between-environments.md) | Decision |
 | [AWS architecture](architecture/aws.md) | Explanation |
 | [Apply the AWS environments](runbooks/apply-environments.md) | Runbook |
+| [Release to production](runbooks/release-to-production.md) | Runbook |
 | [Outputs contract](reference/outputs-contract.md) | Reference |
 | [CI/CD](reference/ci-cd.md) | Reference |

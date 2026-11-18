@@ -58,6 +58,12 @@ terraform plan
 GitHub Actions with OIDC (no AWS keys): checks and scans on every pull request, `terraform plan` for each root
 module on the pull request, automatic apply to staging after a merge, and apply with approval for shared and
 production. Releases follow semantic versioning. Details: [CI/CD](docs/reference/ci-cd.md).
+How a change reaches production: [release to production](docs/runbooks/release-to-production.md).
+
+| Environment | App | API |
+|---|---|---|
+| staging | <https://app-staging.silversoft.com.br> | <https://api-staging.silversoft.com.br> |
+| prod | <https://app.silversoft.com.br> | <https://api.silversoft.com.br> |
 
 ## Contributing
 
