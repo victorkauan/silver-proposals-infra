@@ -86,8 +86,10 @@ jobs:
       root: staging
     secrets: inherit
 
+  # Explicit condition: without it, a skipped apply-shared (no shared changes) would skip production too.
   apply-prod:
     needs: apply-staging
+    if: always() && needs.apply-staging.result == 'success'
     permissions:
       contents: read
       id-token: write
