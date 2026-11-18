@@ -29,7 +29,7 @@ module "frontend" {
   environment              = var.environment
   permissions_boundary_arn = local.permissions_boundary_arn
   github_oidc_provider_arn = local.github_oidc_provider_arn
-  github_owner             = var.github_owner
+  github_subject_prefix    = var.frontend_github_subject_prefix
 }
 
 module "api" {
@@ -60,7 +60,7 @@ module "api" {
 
   permissions_boundary_arn = local.permissions_boundary_arn
   github_oidc_provider_arn = local.github_oidc_provider_arn
-  github_owner             = var.github_owner
+  github_subject_prefix    = var.backend_github_subject_prefix
 
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 }

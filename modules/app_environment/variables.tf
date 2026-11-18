@@ -56,8 +56,16 @@ variable "shared" {
   })
 }
 
-variable "github_owner" {
-  description = "GitHub owner of the backend and frontend repositories (OIDC subjects of the deploy roles)."
+# The account uses immutable OIDC subjects (owner and repository with their numeric IDs).
+# Read them with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub
+variable "backend_github_subject_prefix" {
+  description = "OIDC subject prefix of the backend repository."
   type        = string
-  default     = "victorkauan"
+  default     = "repo:victorkauan@71532562/silver-proposals-backend@1460360885"
+}
+
+variable "frontend_github_subject_prefix" {
+  description = "OIDC subject prefix of the frontend repository."
+  type        = string
+  default     = "repo:victorkauan@71532562/silver-proposals-frontend@1460352038"
 }

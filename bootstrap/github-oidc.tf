@@ -11,7 +11,6 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  infra_repo   = "${var.github_owner}/silver-proposals-infra"
   boundary_arn = "${local.account_arn}:policy/${var.workload_boundary_name}"
 }
 
@@ -114,8 +113,8 @@ data "aws_iam_policy_document" "ci_assume" {
       variable = "token.actions.githubusercontent.com:sub"
       values = (
         each.value.mode == "plan"
-        ? ["repo:${local.infra_repo}:pull_request", "repo:${local.infra_repo}:ref:refs/heads/main"]
-        : ["repo:${local.infra_repo}:environment:${each.value.environment}"]
+        ? ["${var.github_infra_subject_prefix}:pull_request", "${var.github_infra_subject_prefix}:ref:refs/heads/main"]
+        : ["${var.github_infra_subject_prefix}:environment:${each.value.environment}"]
       )
     }
   }

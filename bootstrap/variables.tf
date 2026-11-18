@@ -34,10 +34,10 @@ variable "noncurrent_version_retention_days" {
   default     = 90
 }
 
-variable "github_owner" {
-  description = "GitHub user or organization that owns the project repositories (OIDC subject)."
+variable "github_infra_subject_prefix" {
+  description = "OIDC subject prefix of the infra repository. The account uses immutable subjects (owner and repository with their numeric IDs), so a renamed or recreated repository is never trusted. Read it with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub"
   type        = string
-  default     = "victorkauan"
+  default     = "repo:victorkauan@71532562/silver-proposals-infra@1460483036"
 }
 
 variable "workload_boundary_name" {

@@ -17,12 +17,16 @@ action is pinned to a commit SHA, and scanner images are pinned by digest.
 
 | Role | Assumed by (OIDC subject) | Permissions |
 |---|---|---|
-| `silver-proposals-terraform-<root>-plan` | `repo:victorkauan/silver-proposals-infra:pull_request` and `:ref:refs/heads/main` | `ReadOnlyAccess`, its own state (read/write, for the lock), the shared state (read), and the app secrets (plans refresh secret versions) |
-| `silver-proposals-terraform-<root>` | `repo:victorkauan/silver-proposals-infra:environment:<root>` | `PowerUserAccess`, IAM only for `silver-proposals-*` roles that carry the workload boundary, its own state and the shared state |
-| `silver-proposals-<env>-deploy-backend` | `repo:victorkauan/silver-proposals-backend:environment:<env>` | ECR (push only in staging), task definitions, its ECS service, migrations task, pass its two task roles |
-| `silver-proposals-<env>-deploy-frontend` | `repo:victorkauan/silver-proposals-frontend:environment:<env>` | its S3 bucket and CloudFront invalidations |
+| `silver-proposals-terraform-<root>-plan` | `<infra>:pull_request` and `<infra>:ref:refs/heads/main` | `ReadOnlyAccess`, its own state (read/write, for the lock), the shared state (read), and the app secrets (plans refresh secret versions) |
+| `silver-proposals-terraform-<root>` | `<infra>:environment:<root>` | `PowerUserAccess`, IAM only for `silver-proposals-*` roles that carry the workload boundary, its own state and the shared state |
+| `silver-proposals-<env>-deploy-backend` | `<backend>:environment:<env>` | ECR (push only in staging), task definitions, its ECS service, migrations task, pass its two task roles |
+| `silver-proposals-<env>-deploy-frontend` | `<frontend>:environment:<env>` | its S3 bucket and CloudFront invalidations |
 
-`<root>` is `shared`, `staging`, or `prod`; `<env>` is `staging` or `prod`. The Terraform roles and the OIDC
+`<root>` is `shared`, `staging`, or `prod`; `<env>` is `staging` or `prod`. The GitHub account uses **immutable OIDC
+subjects**, so `<infra>`, `<backend>`, and `<frontend>` include the numeric owner and repository IDs, for example
+`repo:victorkauan@71532562/silver-proposals-infra@1460483036`. A renamed or recreated repository therefore gets a
+different subject and is never trusted. Read a prefix with
+`gh api repos/<owner>/<repo>/actions/oidc/customization/sub`. The Terraform roles and the OIDC
 provider live in `bootstrap/` and are applied by an operator; the deploy roles are created by each environment.
 
 Guard rails:

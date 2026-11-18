@@ -33,7 +33,7 @@ variable "github_oidc_provider_arn" {
   type        = string
 }
 
-variable "github_owner" {
-  description = "GitHub owner of the frontend repository."
+variable "github_subject_prefix" {
+  description = "OIDC subject prefix of the frontend repository (immutable form, with numeric IDs)."
   type        = string
 }
