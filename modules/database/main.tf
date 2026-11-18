@@ -13,9 +13,11 @@ resource "aws_db_parameter_group" "this" {
   name   = var.name
   family = "postgres${var.engine_major_version}"
 
+  # Static parameter: AWS records it as pending-reboot, so declaring the same avoids a perpetual diff.
   parameter {
-    name  = "rds.force_ssl"
-    value = "1"
+    name         = "rds.force_ssl"
+    value        = "1"
+    apply_method = "pending-reboot"
   }
 
   parameter {
