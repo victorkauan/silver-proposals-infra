@@ -102,9 +102,15 @@ variable "cpu" {
 }
 
 variable "memory" {
-  description = "Memory of an API task in MiB."
+  description = "Memory of an API task in MiB (the API plus the OpenTelemetry collector sidecar)."
   type        = number
-  default     = 512
+  default     = 1024
+}
+
+variable "otel_collector_image" {
+  description = "AWS Distro for OpenTelemetry collector image, pinned by digest."
+  type        = string
+  default     = "public.ecr.aws/aws-observability/aws-otel-collector:v0.51.0@sha256:955e240b27d7fd3c7995fd937db4b963975948eb553f656d8c37a564e5b5e07d"
 }
 
 variable "container_port" {

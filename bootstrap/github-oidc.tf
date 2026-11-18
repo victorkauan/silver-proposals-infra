@@ -54,6 +54,11 @@ data "aws_iam_policy_document" "workload_boundary" {
       "s3:DeleteObject",
       "cloudfront:CreateInvalidation",
       "cloudfront:GetInvalidation",
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+      "xray:GetSamplingStatisticSummaries",
     ]
     resources = ["*"]
   }

@@ -45,6 +45,7 @@ module "environment" {
       "cloudflare_zone_id", "vpc_id", "public_subnet_ids", "alb_security_group_id", "alb_dns_name",
       "https_listener_arn", "database_address", "database_port", "database_security_group_id",
       "database_master_secret_arn", "ecr_repository_url", "ecr_repository_arn",
+      "alerts_topic_arn", "alb_arn_suffix", "db_instance_identifier",
     ] : key => data.terraform_remote_state.shared.outputs[key]
   }
 }

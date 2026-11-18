@@ -11,3 +11,4 @@
 | [Release to production](runbooks/release-to-production.md) | Runbook |
 | [Outputs contract](reference/outputs-contract.md) | Reference |
 | [CI/CD](reference/ci-cd.md) | Reference |
+| [Monitoring](reference/monitoring.md) | Reference |

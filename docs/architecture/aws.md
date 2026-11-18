@@ -47,7 +47,7 @@ flowchart LR
 
 ## API
 
-- ECS Fargate, 0.25 vCPU and 0.5 GB, x86_64, read-only root file system, public IP, circuit breaker with rollback.
+- ECS Fargate, 0.25 vCPU and 1 GB (the API plus the collector sidecar), x86_64, read-only root file system, public IP, circuit breaker with rollback.
 - Uvicorn runs with `--proxy-headers`, so the rate limits see the client IP from the ALB's `X-Forwarded-For`.
   This is safe because only the ALB can reach the tasks.
 - The ALB checks `/ready` (database included) and keeps idle connections for 300 seconds, so streamed
@@ -81,6 +81,18 @@ flowchart LR
 | `app.silversoft.com.br`, `app-staging.silversoft.com.br` | each environment's CloudFront | one ACM certificate per environment |
 
 ACM validation records are created in Cloudflare by Terraform. All records are DNS only (proxy off).
+
+## Observability
+
+- **Logs:** the API writes JSON lines (request ID, route template, status, duration, trace ID) to
+  `/ecs/silver-proposals-<env>-api`. Health checks are not logged, and raw paths never are (share tokens).
+- **Traces:** an AWS Distro for OpenTelemetry collector sidecar in each task forwards the API's OpenTelemetry traces
+  to AWS X-Ray. The task role may only write traces.
+- **Metrics:** ALB, ECS, RDS, and CloudFront metrics, plus metrics from log filters (generations, failures, Bedrock
+  latency, errors).
+- **Dashboards and alarms:** one dashboard per environment and alarms on health, errors, latency, resources, and
+  generation failures, all notifying one SNS topic by e-mail. See [Monitoring](../reference/monitoring.md).
+- **Health checks:** the ALB checks `/ready` (database included) and ECS checks `/health` inside the container.
 
 ## Costs and budget
 
