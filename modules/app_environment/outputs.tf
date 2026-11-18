@@ -62,3 +62,23 @@ output "app_secret_arn" {
   description = "Secrets Manager secret of the API."
   value       = module.api.app_secret_arn
 }
+
+output "backend_deploy_role_arn" {
+  description = "OIDC role of the backend deploy workflow."
+  value       = module.api.deploy_role_arn
+}
+
+output "frontend_deploy_role_arn" {
+  description = "OIDC role of the frontend deploy workflow."
+  value       = module.frontend.deploy_role_arn
+}
+
+output "ecs_task_security_group_id" {
+  description = "Security group for one-off API tasks (migrations)."
+  value       = module.api.task_security_group_id
+}
+
+output "ecs_subnet_ids" {
+  description = "Subnets for one-off API tasks (migrations)."
+  value       = module.api.subnet_ids
+}

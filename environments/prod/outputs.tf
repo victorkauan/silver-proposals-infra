@@ -52,3 +52,23 @@ output "app_secret_arn" {
   description = "Secrets Manager secret of the API."
   value       = module.environment.app_secret_arn
 }
+
+output "backend_deploy_role_arn" {
+  description = "OIDC role of the backend deploy workflow (AWS_DEPLOY_ROLE_ARN in the backend repository)."
+  value       = module.environment.backend_deploy_role_arn
+}
+
+output "frontend_deploy_role_arn" {
+  description = "OIDC role of the frontend deploy workflow (AWS_DEPLOY_ROLE_ARN in the frontend repository)."
+  value       = module.environment.frontend_deploy_role_arn
+}
+
+output "ecs_task_security_group_id" {
+  description = "Security group for one-off API tasks such as migrations (ECS_SECURITY_GROUP)."
+  value       = module.environment.ecs_task_security_group_id
+}
+
+output "ecs_subnet_ids" {
+  description = "Subnets for one-off API tasks such as migrations (ECS_SUBNETS)."
+  value       = module.environment.ecs_subnet_ids
+}

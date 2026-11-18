@@ -2,7 +2,14 @@ locals {
   name   = "silver-proposals"
   region = "us-east-1"
   domain = "silversoft.com.br"
+
+  # Created by bootstrap/; every role in this account's project carries it.
+  permissions_boundary_arn = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:policy/silver-proposals-workload-boundary"
 }
+
+data "aws_caller_identity" "current" {}
+
+data "aws_partition" "current" {}
 
 provider "aws" {
   region = local.region
@@ -28,8 +35,9 @@ data "cloudflare_zone" "this" {
 module "network" {
   source = "../../modules/network"
 
-  name   = local.name
-  region = local.region
+  name                     = local.name
+  region                   = local.region
+  permissions_boundary_arn = local.permissions_boundary_arn
 }
 
 module "api_certificate" {

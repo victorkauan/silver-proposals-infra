@@ -46,6 +46,23 @@ This was done once on 2026-11-18. Repeat it only to rebuild the bucket from scra
    cd ../prod && terraform init
    ```
 
+## GitHub OIDC provider
+
+The bootstrap also creates the GitHub Actions OIDC provider, the workload permissions boundary, and the Terraform CI
+roles ([CI/CD](../reference/ci-cd.md)). An AWS account can hold only one OIDC provider per URL. If the account
+already has one for `https://token.actions.githubusercontent.com` (for example from another project), import it
+before the first apply instead of creating a duplicate:
+
+```bash
+cd bootstrap
+account=$(aws sts get-caller-identity --query Account --output text)
+terraform import aws_iam_openid_connect_provider.github \
+  "arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com"
+```
+
+Terraform then only adds the project tags; roles of other projects that trust the provider keep working, and the
+provider has `prevent_destroy`.
+
 ## Daily use
 
 Run `terraform init` once per environment folder, then `plan` and `apply` as usual. Every command that writes the

@@ -22,3 +22,8 @@ output "url" {
   description = "Public URL of the app."
   value       = "https://${var.host_name}"
 }
+
+output "deploy_role_arn" {
+  description = "Role the frontend deploy workflow assumes through OIDC (AWS_DEPLOY_ROLE_ARN)."
+  value       = aws_iam_role.deploy.arn
+}

@@ -141,3 +141,28 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare zone of the API host name."
   type        = string
 }
+
+variable "permissions_boundary_arn" {
+  description = "Permissions boundary attached to every IAM role this module creates."
+  type        = string
+}
+
+variable "github_oidc_provider_arn" {
+  description = "GitHub Actions OIDC provider trusted by the deploy role."
+  type        = string
+}
+
+variable "github_owner" {
+  description = "GitHub owner of the backend repository."
+  type        = string
+}
+
+variable "image_repository_arn" {
+  description = "ARN of the ECR repository the deploy role reads (and, in staging, pushes to)."
+  type        = string
+}
+
+variable "allow_image_push" {
+  description = "Whether this environment's deploy role may push images (true only where images are built)."
+  type        = bool
+}

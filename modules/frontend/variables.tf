@@ -17,3 +17,23 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare zone of the host name."
   type        = string
 }
+
+variable "permissions_boundary_arn" {
+  description = "Permissions boundary attached to every IAM role this module creates."
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name, used in the deploy role and its OIDC subject."
+  type        = string
+}
+
+variable "github_oidc_provider_arn" {
+  description = "GitHub Actions OIDC provider trusted by the deploy role."
+  type        = string
+}
+
+variable "github_owner" {
+  description = "GitHub owner of the frontend repository."
+  type        = string
+}

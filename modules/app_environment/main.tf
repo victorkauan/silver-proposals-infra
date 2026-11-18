@@ -1,6 +1,14 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_partition" "current" {}
+
 locals {
   app_host_name = "${var.app_subdomain}.${var.domain}"
   api_host_name = "${var.api_subdomain}.${var.domain}"
+
+  account_arn              = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}"
+  permissions_boundary_arn = "${local.account_arn}:policy/silver-proposals-workload-boundary"
+  github_oidc_provider_arn = "${local.account_arn}:oidc-provider/token.actions.githubusercontent.com"
 }
 
 module "app_certificate" {
@@ -17,6 +25,11 @@ module "frontend" {
   bucket_name        = "silversoft-silver-proposals-app-${var.environment}"
   certificate_arn    = module.app_certificate.certificate_arn
   cloudflare_zone_id = var.shared.cloudflare_zone_id
+
+  environment              = var.environment
+  permissions_boundary_arn = local.permissions_boundary_arn
+  github_oidc_provider_arn = local.github_oidc_provider_arn
+  github_owner             = var.github_owner
 }
 
 module "api" {
@@ -40,8 +53,14 @@ module "api" {
   database_master_secret_arn = var.shared.database_master_secret_arn
 
   image_repository_url = var.shared.ecr_repository_url
+  image_repository_arn = var.shared.ecr_repository_arn
+  allow_image_push     = var.environment == "staging"
   image_tag            = var.image_tag
   desired_count        = var.desired_count
+
+  permissions_boundary_arn = local.permissions_boundary_arn
+  github_oidc_provider_arn = local.github_oidc_provider_arn
+  github_owner             = var.github_owner
 
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 }

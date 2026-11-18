@@ -25,3 +25,8 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }
+
+variable "permissions_boundary_arn" {
+  description = "Permissions boundary attached to every IAM role this module creates."
+  type        = string
+}

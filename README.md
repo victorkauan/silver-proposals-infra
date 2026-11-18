@@ -53,6 +53,12 @@ terraform init                # connects to the remote state
 terraform plan
 ```
 
+## CI/CD
+
+GitHub Actions with OIDC (no AWS keys): checks and scans on every pull request, `terraform plan` for each root
+module on the pull request, automatic apply to staging after a merge, and apply with approval for shared and
+production. Releases follow semantic versioning. Details: [CI/CD](docs/reference/ci-cd.md).
+
 ## Contributing
 
 Install the Git hooks before your first commit:

@@ -37,3 +37,18 @@ output "url" {
   description = "Public URL of the API."
   value       = "https://${var.api_host_name}"
 }
+
+output "deploy_role_arn" {
+  description = "Role the backend deploy workflow assumes through OIDC (AWS_DEPLOY_ROLE_ARN)."
+  value       = aws_iam_role.deploy.arn
+}
+
+output "task_security_group_id" {
+  description = "Security group of the API tasks, for one-off tasks such as migrations."
+  value       = aws_security_group.task.id
+}
+
+output "subnet_ids" {
+  description = "Subnets of the API tasks, for one-off tasks such as migrations."
+  value       = var.subnet_ids
+}

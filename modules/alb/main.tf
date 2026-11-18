@@ -32,6 +32,7 @@ resource "aws_vpc_security_group_egress_rule" "to_vpc" {
   to_port           = var.target_port
 }
 
+#trivy:ignore:AWS-0053 The load balancer is the public HTTPS entry point of the API by design.
 resource "aws_lb" "this" {
   #checkov:skip=CKV_AWS_91:Access logs need a dedicated bucket; request logging comes with the observability work.
   #checkov:skip=CKV2_AWS_28:No WAF in v1 (cost); rate limiting is enforced by the API.

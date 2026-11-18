@@ -117,8 +117,9 @@ data "aws_iam_policy_document" "flow_logs_assume" {
 resource "aws_iam_role" "flow_logs" {
   count = var.flow_log_retention_days > 0 ? 1 : 0
 
-  name               = "${var.name}-flow-logs"
-  assume_role_policy = data.aws_iam_policy_document.flow_logs_assume.json
+  name                 = "${var.name}-flow-logs"
+  assume_role_policy   = data.aws_iam_policy_document.flow_logs_assume.json
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 data "aws_iam_policy_document" "flow_logs" {

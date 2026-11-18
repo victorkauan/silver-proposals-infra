@@ -33,3 +33,15 @@ variable "noncurrent_version_retention_days" {
   type        = number
   default     = 90
 }
+
+variable "github_owner" {
+  description = "GitHub user or organization that owns the project repositories (OIDC subject)."
+  type        = string
+  default     = "victorkauan"
+}
+
+variable "workload_boundary_name" {
+  description = "Name of the permissions boundary every application role must carry."
+  type        = string
+  default     = "silver-proposals-workload-boundary"
+}

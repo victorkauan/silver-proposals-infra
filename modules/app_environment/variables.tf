@@ -52,5 +52,12 @@ variable "shared" {
     database_security_group_id = string
     database_master_secret_arn = string
     ecr_repository_url         = string
+    ecr_repository_arn         = string
   })
+}
+
+variable "github_owner" {
+  description = "GitHub owner of the backend and frontend repositories (OIDC subjects of the deploy roles)."
+  type        = string
+  default     = "victorkauan"
 }
