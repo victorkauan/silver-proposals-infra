@@ -32,7 +32,7 @@ repos:
         pass_filenames: false
       - id: terraform-validate
         name: terraform validate
-        entry: bash -c 'for dir in environments/*/; do terraform -chdir="$dir" init -backend=false -input=false >/dev/null && terraform -chdir="$dir" validate -no-color || exit 1; done'
+        entry: bash -c 'for dir in bootstrap/ environments/*/; do terraform -chdir="$dir" init -backend=false -input=false >/dev/null && terraform -chdir="$dir" validate -no-color || exit 1; done'
         language: system
         files: \.(tf|hcl)$
         pass_filenames: false
