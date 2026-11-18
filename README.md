@@ -18,14 +18,17 @@ How the outputs reach the app pipelines: [outputs contract](docs/reference/outpu
 ```
 bootstrap/        # one-time root module: the S3 bucket that stores every Terraform state
 environments/
+  shared/         # network, load balancer, database, image registry, budget (used by both environments)
   staging/        # root module for staging (app-staging / api-staging.silversoft.com.br)
   prod/           # root module for production (app / api.silversoft.com.br)
-modules/          # reusable modules shared by both environments
+modules/          # network, alb, database, ecr, budget, acm_certificate, frontend, api_service, app_environment
 docs/             # architecture, ADRs, guides, reference, runbooks
 ```
 
-Each environment is an independent root module with its own state. Both compose the same modules, so the
-environments differ only in their inputs.
+Each environment is an independent root module with its own state. Both compose the same `app_environment`
+module, so they differ only in their inputs. The load balancer and the database instance are shared to keep the
+cost near the budget ([ADR-0003](docs/adr/0003-share-the-load-balancer-and-database-between-environments.md)).
+Architecture: [AWS architecture](docs/architecture/aws.md). How to apply: [runbook](docs/runbooks/apply-environments.md).
 
 ## Remote state
 

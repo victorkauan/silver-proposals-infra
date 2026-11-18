@@ -17,9 +17,15 @@ variable "ci_role_prefix" {
 }
 
 variable "environments" {
-  description = "Environments that keep their state under <environment>/terraform.tfstate in the bucket."
+  description = "Root modules that keep their state under <name>/terraform.tfstate, each with its own CI role."
   type        = list(string)
-  default     = ["staging", "prod"]
+  default     = ["shared", "staging", "prod"]
+}
+
+variable "shared_state_prefix" {
+  description = "Prefix of the shared state (network, load balancer, database) that every environment may read."
+  type        = string
+  default     = "shared"
 }
 
 variable "noncurrent_version_retention_days" {

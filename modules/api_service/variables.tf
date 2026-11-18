@@ -1,0 +1,143 @@
+variable "environment" {
+  description = "Environment name (staging or prod); also the ENVIRONMENT of the API."
+  type        = string
+
+  validation {
+    condition     = contains(["staging", "prod"], var.environment)
+    error_message = "environment must be staging or prod."
+  }
+}
+
+variable "region" {
+  description = "AWS region of the service and of the Bedrock inference profile."
+  type        = string
+}
+
+variable "api_host_name" {
+  description = "Public host name of the API (for example api.silversoft.com.br)."
+  type        = string
+}
+
+variable "cors_origins" {
+  description = "Origins allowed to call the API with credentials."
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "VPC of the shared network."
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "Public subnets for the tasks (no NAT Gateway)."
+  type        = list(string)
+}
+
+variable "alb_security_group_id" {
+  description = "Security group of the shared load balancer."
+  type        = string
+}
+
+variable "alb_dns_name" {
+  description = "DNS name of the shared load balancer (target of the API CNAME)."
+  type        = string
+}
+
+variable "https_listener_arn" {
+  description = "HTTPS listener of the shared load balancer."
+  type        = string
+}
+
+variable "listener_rule_priority" {
+  description = "Priority of this environment's host-based rule on the shared listener; unique per environment."
+  type        = number
+}
+
+variable "database_address" {
+  description = "Host name of the shared PostgreSQL instance."
+  type        = string
+}
+
+variable "database_port" {
+  description = "Port of the shared PostgreSQL instance."
+  type        = number
+}
+
+variable "database_security_group_id" {
+  description = "Security group of the shared database; this module adds an ingress rule for its tasks."
+  type        = string
+}
+
+variable "database_master_secret_arn" {
+  description = "RDS-managed secret with the master credentials, used only by the one-off database setup task."
+  type        = string
+}
+
+variable "database_setup_image" {
+  description = "Container image with psql used by the database setup task."
+  type        = string
+  default     = "public.ecr.aws/docker/library/postgres:17-alpine"
+}
+
+variable "image_repository_url" {
+  description = "ECR repository of the API image."
+  type        = string
+}
+
+variable "image_tag" {
+  description = "Tag of the API image to run."
+  type        = string
+}
+
+variable "desired_count" {
+  description = "Number of running API tasks; 0 until the first image is published."
+  type        = number
+  default     = 0
+}
+
+variable "cpu" {
+  description = "CPU units of an API task (256 = 0.25 vCPU)."
+  type        = number
+  default     = 256
+}
+
+variable "memory" {
+  description = "Memory of an API task in MiB."
+  type        = number
+  default     = 512
+}
+
+variable "container_port" {
+  description = "Port the API listens on inside the container."
+  type        = number
+  default     = 8000
+}
+
+variable "bedrock_model_id" {
+  description = "Bedrock inference profile used by the API (BEDROCK_MODEL_ID)."
+  type        = string
+  default     = "us.amazon.nova-2-lite-v1:0"
+}
+
+variable "bedrock_foundation_model_id" {
+  description = "Foundation model behind the inference profile."
+  type        = string
+  default     = "amazon.nova-2-lite-v1:0"
+}
+
+variable "bedrock_model_regions" {
+  description = "Regions the inference profile routes to; each needs permission on the foundation model."
+  type        = list(string)
+  default     = ["us-east-1", "us-east-2", "us-west-2"]
+}
+
+variable "log_retention_days" {
+  description = "Retention of the API logs."
+  type        = number
+  default     = 14
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone of the API host name."
+  type        = string
+}
