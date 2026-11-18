@@ -20,7 +20,10 @@ print(",".join(v) if isinstance(v, list) else v)' "$1" "$2"
 
 set_vars() {
   local repo="$1"; shift
-  gh api --silent --method PUT "repos/$owner/$repo/environments/$env_name" >/dev/null
+  # Create the environment only if it is missing, so existing protection rules (reviewers) stay untouched.
+  if ! gh api --silent "repos/$owner/$repo/environments/$env_name" >/dev/null 2>&1; then
+    gh api --silent --method PUT "repos/$owner/$repo/environments/$env_name" >/dev/null
+  fi
   while [ "$#" -gt 0 ]; do
     gh variable set "$1" --repo "$owner/$repo" --env "$env_name" --body "$2"
     echo "  $repo [$env_name] $1"
