@@ -16,3 +16,4 @@
 | [Threat model](security/threat-model.md) | Security |
 | [Data processing record (LGPD)](security/data-processing.md) | Security |
 | [OWASP Top 10:2025](security/owasp-top-10.md) | Security |
+| [TCC presentation](apresentacao/README.md) | Presentation |
