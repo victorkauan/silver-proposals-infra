@@ -52,3 +52,8 @@ output "subnet_ids" {
   description = "Subnets of the API tasks, for one-off tasks such as migrations."
   value       = var.subnet_ids
 }
+
+output "target_group_arn_suffix" {
+  description = "ARN suffix of the API target group, for CloudWatch metrics."
+  value       = aws_lb_target_group.api.arn_suffix
+}

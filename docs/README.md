@@ -12,3 +12,4 @@
 | [Pause and resume the project](runbooks/pause-and-resume.md) | Runbook |
 | [Outputs contract](reference/outputs-contract.md) | Reference |
 | [CI/CD](reference/ci-cd.md) | Reference |
+| [Monitoring](reference/monitoring.md) | Reference |

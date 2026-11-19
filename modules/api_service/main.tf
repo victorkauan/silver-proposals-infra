@@ -14,6 +14,15 @@ locals {
     "arn:${local.partition}:bedrock:${region}::foundation-model/${var.bedrock_foundation_model_id}"
   ]
   bedrock_profile_arn = "arn:${local.partition}:bedrock:${var.region}:${local.account_id}:inference-profile/${var.bedrock_model_id}"
+
+  otel_collector_config = yamlencode({
+    receivers  = { otlp = { protocols = { http = { endpoint = "127.0.0.1:4318" } } } }
+    processors = { batch = {} }
+    exporters  = { awsxray = { region = var.region } }
+    service = {
+      pipelines = { traces = { receivers = ["otlp"], processors = ["batch"], exporters = ["awsxray"] } }
+    }
+  })
 }
 
 # ---------------------------------------------------------------- secrets
@@ -133,6 +142,28 @@ resource "aws_iam_role_policy" "task_bedrock" {
   policy = data.aws_iam_policy_document.task_bedrock.json
 }
 
+data "aws_iam_policy_document" "task_tracing" {
+  #checkov:skip=CKV_AWS_111:X-Ray write actions do not support resource-level permissions.
+  #checkov:skip=CKV_AWS_356:Same: X-Ray trace and sampling actions only accept "*".
+  statement {
+    sid = "SendTracesToXRay"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+      "xray:GetSamplingStatisticSummaries",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "task_tracing" {
+  name   = "send-traces"
+  role   = aws_iam_role.task.id
+  policy = data.aws_iam_policy_document.task_tracing.json
+}
+
 # ---------------------------------------------------------------- network
 
 resource "aws_security_group" "task" {
@@ -215,10 +246,18 @@ resource "aws_ecs_task_definition" "api" {
       essential = true
       # Tasks only accept traffic from the ALB, so trusting its X-Forwarded-For header for the
       # client IP (used by the rate limits) is safe.
+      # The app logs each request itself; Uvicorn's access log would print raw paths with share tokens.
       command = [
         "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", tostring(var.container_port),
-        "--proxy-headers", "--forwarded-allow-ips", "*",
+        "--proxy-headers", "--forwarded-allow-ips", "*", "--no-access-log",
       ]
+      healthCheck = {
+        command     = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:${var.container_port}/health', timeout=3)\""]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 20
+      }
       readonlyRootFilesystem = true
       portMappings           = [{ containerPort = var.container_port, protocol = "tcp" }]
       environment = [
@@ -227,6 +266,8 @@ resource "aws_ecs_task_definition" "api" {
         { name = "AI_PROVIDER", value = "bedrock" },
         { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
         { name = "BEDROCK_REGION", value = var.region },
+        { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://127.0.0.1:4318" },
+        { name = "OTEL_SERVICE_NAME", value = "silver-proposals-api-${var.environment}" },
       ]
       secrets = [
         { name = "JWT_SECRET", valueFrom = "${aws_secretsmanager_secret.app.arn}:jwt_secret::" },
@@ -238,6 +279,22 @@ resource "aws_ecs_task_definition" "api" {
           awslogs-group         = aws_cloudwatch_log_group.api.name
           awslogs-region        = var.region
           awslogs-stream-prefix = "api"
+        }
+      }
+    },
+    # AWS Distro for OpenTelemetry: receives the API's traces on localhost and sends them to X-Ray.
+    {
+      name                   = "otel-collector"
+      image                  = var.otel_collector_image
+      essential              = false
+      readonlyRootFilesystem = true
+      environment            = [{ name = "AOT_CONFIG_CONTENT", value = local.otel_collector_config }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.api.name
+          awslogs-region        = var.region
+          awslogs-stream-prefix = "otel"
         }
       }
     },

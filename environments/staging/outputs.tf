@@ -72,3 +72,8 @@ output "ecs_subnet_ids" {
   description = "Subnets for one-off API tasks such as migrations (ECS_SUBNETS)."
   value       = module.environment.ecs_subnet_ids
 }
+
+output "dashboard_name" {
+  description = "CloudWatch dashboard of the environment."
+  value       = module.environment.dashboard_name
+}

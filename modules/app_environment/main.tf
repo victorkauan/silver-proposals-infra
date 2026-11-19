@@ -64,3 +64,18 @@ module "api" {
 
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 }
+
+module "monitoring" {
+  source = "../monitoring"
+
+  environment             = var.environment
+  region                  = var.region
+  alerts_topic_arn        = var.shared.alerts_topic_arn
+  alb_arn_suffix          = var.shared.alb_arn_suffix
+  target_group_arn_suffix = module.api.target_group_arn_suffix
+  cluster_name            = module.api.cluster_name
+  service_name            = module.api.service_name
+  log_group_name          = module.api.log_group_name
+  distribution_id         = module.frontend.distribution_id
+  db_instance_identifier  = var.shared.db_instance_identifier
+}

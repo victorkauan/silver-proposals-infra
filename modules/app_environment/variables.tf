@@ -53,6 +53,9 @@ variable "shared" {
     database_master_secret_arn = string
     ecr_repository_url         = string
     ecr_repository_arn         = string
+    alerts_topic_arn           = string
+    alb_arn_suffix             = string
+    db_instance_identifier     = string
   })
 }
 
