@@ -13,3 +13,6 @@
 | [Outputs contract](reference/outputs-contract.md) | Reference |
 | [CI/CD](reference/ci-cd.md) | Reference |
 | [Monitoring](reference/monitoring.md) | Reference |
+| [Threat model](security/threat-model.md) | Security |
+| [Data processing record (LGPD)](security/data-processing.md) | Security |
+| [OWASP Top 10:2025](security/owasp-top-10.md) | Security |
