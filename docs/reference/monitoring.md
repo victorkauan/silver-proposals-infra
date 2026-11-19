@@ -21,7 +21,7 @@ latency), the shared database, recent errors from the logs, and the state of eve
 | `silver-proposals-<env>-generation-failures` | 3 or more failed generations in 15 minutes | `generation_failed` log lines (`error_code`): Bedrock throttling, timeouts, or access |
 | `silver-proposals-<env>-api-errors` | 5 or more `ERROR` log lines in 5 minutes | the dashboard's "Recent API errors" |
 | `silver-proposals-<env>-app-5xx` | more than 5% of the app's CloudFront requests fail for 15 minutes | the S3 bucket and the latest frontend deploy |
-| `silver-proposals-db-cpu` / `-db-memory` | database CPU above 80% / freeable memory below 64 MiB for 15 minutes | slow queries in the database log group; consider a larger instance class |
+| `silver-proposals-db-cpu` / `-db-memory` | database CPU above 80% / freeable memory below 32 MiB for 15 minutes (it normally keeps 50 to 60 MiB free) | slow queries in the database log group; consider a larger instance class |
 | `silver-proposals-db-storage` | free storage below 2 GiB | storage autoscaling (up to 50 GiB) should act first |
 | `silver-proposals-db-connections` | more than 60 connections | connection leaks; both environments share the instance |
 | `silver-proposals-alb-5xx` | 5 or more 5xx responses from the load balancer itself in 5 minutes | `api-down` in either environment |
@@ -34,6 +34,11 @@ The application metrics (`SilverProposals/<env>`: `GenerationsCompleted`, `Gener
 Each API task runs the AWS Distro for OpenTelemetry collector as a sidecar. The API sends OTLP traces to it on
 `127.0.0.1:4318`, and it forwards them to AWS X-Ray (service `silver-proposals-api-<env>`). Requests, database
 queries, and Bedrock calls appear as spans; log lines carry the matching `trace_id`.
+
+## Pausing
+
+To pause the project without a flood of alarms, use `scripts/environment-power.sh`; see
+[Pause and resume the project](../runbooks/pause-and-resume.md).
 
 ## Test an alarm
 
