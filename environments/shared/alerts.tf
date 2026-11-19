@@ -13,6 +13,8 @@ resource "aws_sns_topic_subscription" "alerts_email" {
   endpoint  = each.value
 }
 
+# A stopped or unreachable database sends no metrics; the environments' api-down alarms catch that
+# through /ready, so missing data here is not treated as a problem.
 locals {
   db_dimensions = { DBInstanceIdentifier = module.database.identifier }
   alert_actions = [aws_sns_topic.alerts.arn]
@@ -29,7 +31,7 @@ resource "aws_cloudwatch_metric_alarm" "db_cpu" {
   evaluation_periods  = 3
   comparison_operator = "GreaterThanThreshold"
   threshold           = 80
-  treat_missing_data  = "breaching"
+  treat_missing_data  = "notBreaching"
   alarm_actions       = local.alert_actions
   ok_actions          = local.alert_actions
 }
@@ -45,14 +47,15 @@ resource "aws_cloudwatch_metric_alarm" "db_storage" {
   evaluation_periods  = 1
   comparison_operator = "LessThanThreshold"
   threshold           = 2 * 1024 * 1024 * 1024
-  treat_missing_data  = "breaching"
+  treat_missing_data  = "notBreaching"
   alarm_actions       = local.alert_actions
   ok_actions          = local.alert_actions
 }
 
+# PostgreSQL keeps 50 to 60 MiB free on a db.t4g.micro (1 GiB) and uses the rest as cache.
 resource "aws_cloudwatch_metric_alarm" "db_memory" {
   alarm_name          = "${local.name}-db-memory"
-  alarm_description   = "The shared database has less than 64 MiB of freeable memory for 15 minutes."
+  alarm_description   = "The shared database has less than 32 MiB of freeable memory for 15 minutes."
   namespace           = "AWS/RDS"
   metric_name         = "FreeableMemory"
   dimensions          = local.db_dimensions
@@ -60,8 +63,8 @@ resource "aws_cloudwatch_metric_alarm" "db_memory" {
   period              = 300
   evaluation_periods  = 3
   comparison_operator = "LessThanThreshold"
-  threshold           = 64 * 1024 * 1024
-  treat_missing_data  = "breaching"
+  threshold           = 32 * 1024 * 1024
+  treat_missing_data  = "notBreaching"
   alarm_actions       = local.alert_actions
   ok_actions          = local.alert_actions
 }
