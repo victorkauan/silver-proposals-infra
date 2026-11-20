@@ -96,6 +96,7 @@ ACM validation records are created in Cloudflare by Terraform. All records are D
 
 ## Costs and budget
 
-About USD 66/month for both environments with the API running (see ADR-0003). The AWS Budget alerts at 80% and
-100% of USD 40 actual cost and at 100% forecast; with both environments running all month, the alert is expected
-to fire, and the AWS credits cover the spend.
+About USD 66/month for both environments with the API running (see ADR-0003), plus about USD 5/month of
+observability. The AWS Budget is an overrun alert, not the expected cost: it fires at 80% (USD 80) and 100%
+(USD 100) of actual cost and at 100% of the forecast, so it stays silent in normal operation and warns when the
+spend grows about 13% or more above the estimate (for example, abuse of AI generation or a resource left running).

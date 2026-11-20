@@ -1,4 +1,4 @@
-/* slides-a.js — capa, problema e produto (slides 1 a 3). */
+/* slides-a.js — capa, problema, IA genérica e produto (slides 1 a 4). */
 (function () {
   'use strict';
   const K = window.K, S = window.SLIDES;
@@ -40,9 +40,9 @@
 
   /* 2. problema: três números de fontes publicadas */
   const STATS = [
-    { v: 70, d: 0, suf: '%', lbl: 'do tempo dos vendedores vai para tarefas que <b>não são vender</b>', src: 'Salesforce, State of Sales (2024)' },
+    { v: 60, d: 0, suf: '%', lbl: 'do tempo dos vendedores vai para tarefas que <b>não são vender</b>', src: 'Salesforce, State of Sales, 7ª ed. (2026)' },
     { v: 40, d: 0, suf: '%', pre: '−', lbl: 'de tempo em tarefas de <b>escrita profissional</b> com IA generativa, e 18% mais qualidade', src: 'Noy e Zhang, Science (2023)' },
-    { v: 13, d: 0, suf: '%', lbl: 'das empresas brasileiras <b>usavam IA</b> em 2024', src: 'Cetic.br, TIC Empresas 2024 (2025)' },
+    { v: 17, d: 0, suf: '%', lbl: 'das empresas brasileiras <b>usavam IA</b> em 2025', src: 'Cetic.br, TIC Empresas 2025 (2026)' },
   ];
   S.push({
     id: 'problema', act: 'Contexto', name: 'O problema',
@@ -65,15 +65,41 @@
     },
   });
 
-  /* 3. produto: o ciclo da proposta na v1 */
+  /* 3. IA genérica: acelera a escrita, mas tira a proposta do controle da empresa */
+  const RISKS = [
+    ['eye', 'Governança', 'Não registra quem gerou o quê, não guarda versões e não controla quem vê o documento.',
+      'Papéis por proposta, histórico com autor e links revogáveis'],
+    ['lock', 'Confidencialidade', 'O briefing leva preços, estratégia e dados do cliente para contas pessoais, fora da LGPD.',
+      'Modelo acessado pela conta da empresa; dados não vão ao fornecedor do modelo'],
+    ['cross', 'Riscos de LLM', 'Injeção de prompt e divulgação de informações sensíveis estão no OWASP Top 10 para LLMs.',
+      'Briefing tratado como dado, regras fixas no servidor e revisão humana'],
+  ];
   S.push({
-    id: 'produto', act: 'Solução', name: 'O produto e o recorte da v1',
+    id: 'ia-generica', act: 'Contexto', name: 'IA genérica não basta',
+    title: 'Uma IA genérica <em>acelera a escrita</em>, mas tira a proposta do controle da empresa',
+    html: `
+      <div class="body">
+        <div class="risks">${RISKS.map(([ic, t, r, a], i) => `
+          <div class="rk rv" data-at="${i}">
+            <div class="rk-h">${K.icon(ic)}<b>${t}</b></div>
+            <p class="rk-r">${r}</p>
+            <p class="rk-a rv" data-at="3" style="--d:${i * 0.15}s">${K.icon('check')}<span>${a}</span></p>
+          </div>`).join('')}
+        </div>
+        <div class="rk-f rv" data-at="4"><b>80%</b> das empresas brasileiras que usam IA adotam soluções prontas: o risco já está na rotina. <span class="src">Cetic.br (2026) · OWASP (2025)</span></div>
+      </div>`,
+    setup() { return [0, 1, 2, 3, 4].map(() => ({ dur: 700, draw() {} })); },
+  });
+
+  /* 4. produto: o ciclo da proposta */
+  S.push({
+    id: 'produto', act: 'Solução', name: 'O produto',
     title: 'Do <em>briefing</em> à proposta compartilhada, com a IA escrevendo e o usuário no controle',
     html: `
       <div class="body">
         <svg class="fig flow" width="1700" height="420" viewBox="0 0 1700 420"></svg>
         <div class="scope">
-          <div class="scope-row rv" data-at="4"><span class="scope-k">versão 1 · no ar</span>
+          <div class="scope-row rv" data-at="4"><span class="scope-k">no ar</span>
             <span class="tag">cadastro e login</span><span class="tag">papéis por proposta</span><span class="tag">geração em tempo real</span>
             <span class="tag">versões e conflito</span><span class="tag">link com validade</span></div>
           <div class="scope-row rv" data-at="4" style="--d:.15s"><span class="scope-k">próximos passos</span>

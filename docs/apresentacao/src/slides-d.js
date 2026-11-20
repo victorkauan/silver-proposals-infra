@@ -1,4 +1,4 @@
-/* slides-d.js — próximos passos e encerramento (slide 8). */
+/* slides-d.js — próximos passos e encerramento (slide 10). */
 (function () {
   'use strict';
   const K = window.K, S = window.SLIDES;
