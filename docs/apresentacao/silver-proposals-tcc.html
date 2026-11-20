@@ -792,11 +792,11 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 
   /* 9. avaliação com propostas reais e custo por proposta */
   const EVAL = [
-    { v: 3.9, d: 1, suf: ' s', lbl: 'para o rascunho completo', sub: 'mediana de 30 gerações em staging' },
-    { v: 289, d: 0, suf: '/291', lbl: 'fatos do briefing reproduzidos', sub: '10 propostas reais, 3 gerações cada' },
+    { v: 3.4, d: 1, suf: ' s', lbl: 'para o rascunho completo', sub: 'mediana de 30 gerações em staging' },
+    { v: 290, d: 0, suf: '/291', lbl: 'fatos do briefing reproduzidos', sub: '10 propostas reais, 3 gerações cada' },
     { v: 0.07, d: 2, pre: 'R$ ', lbl: 'de IA por proposta, no máximo', sub: 'Nova 2 Lite, até 4.096 tokens de saída' },
   ];
-  const ADDITIONS = { before: 57, after: null };
+  const ADDITIONS = { before: 57, after: 10 };
   S.push({
     id: 'avaliacao', act: 'Resultados', name: 'Avaliação com propostas reais',
     title: 'Com dez propostas reais, o rascunho sai em <em>segundos</em> e a IA custa centavos',
@@ -810,7 +810,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
           <div class="cb"><span class="cb-l">escrita à mão</span><div class="cb-t"><i class="cb-a"></i></div><span class="cb-v mono">R$ 1.368</span></div>
           <div class="cb"><span class="cb-l">com o Silver Proposals</span><div class="cb-t"><i class="cb-b"></i></div><span class="cb-v mono v-b">R$ 1.368</span></div>
         </div>
-        <div class="finding rv" data-at="2">${K.icon('eye')}<span><b>A avaliação achou o que os testes não pegam:</b> sem regras explícitas, o modelo completava lacunas com condições comerciais plausíveis (${ADDITIONS.before}% das saídas)${ADDITIONS.after === null ? '. O prompt foi corrigido pela esteira e medido de novo.' : `; com o prompt revisado, ${ADDITIONS.after}%.`}</span></div>
+        <div class="finding rv" data-at="2">${K.icon('eye')}<span><b>A avaliação achou o que os testes não pegam:</b> sem regras explícitas, o modelo completava lacunas com condições comerciais plausíveis em ${ADDITIONS.before}% das saídas. Corrigido o prompt pela esteira e medido de novo: <b>${ADDITIONS.after}%</b>.</span></div>
       </div>`,
     note: 'Salário: Robert Half, Guia Salarial 2027 (executivo de contas, P/M). Horas: Loopio (2026), 27 h por RFP em PMEs. Redução: Noy e Zhang (2023). Preços: AWS Price List; PTAX de 19/11/2026.',
     setup(c) {
