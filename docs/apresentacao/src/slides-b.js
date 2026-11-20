@@ -12,7 +12,7 @@
         <svg class="fig arch" width="1700" height="730" viewBox="0 0 1700 730"></svg>
         <div class="nokey rv" data-at="3">${K.icon('nokey')}<span><b>Sem chaves</b> · a tarefa usa um papel IAM que só pode invocar o modelo</span></div>
       </div>`,
-    note: 'DNS no Cloudflare (silversoft.com.br) · certificados no ACM · 10 módulos Terraform · cerca de US$ 66/mês para staging e produção.',
+    note: 'DNS no Cloudflare (silversoft.com.br) · certificados no ACM · 12 módulos Terraform · cerca de US$ 79/mês para staging e produção, com observabilidade e WAF.',
     setup(c) {
       const svg = c.$('.arch'), D = K.diagram(svg);
       const vpc = D.group(560, 300, 640, 440, 'VPC · sem NAT Gateway', 'bl');
@@ -20,7 +20,7 @@
       D.node('user', 0, 268, 210, 104, 'Usuário', 'navegador');
       D.node('cf', 280, 60, 230, 104, 'CloudFront', 'app · TLS', 'c-app');
       D.node('s3', 620, 60, 230, 104, 'S3 privado', 'build do frontend', 'c-data');
-      D.node('alb', 280, 410, 230, 104, 'Load Balancer', 'api · HTTPS', 'c-app');
+      D.node('alb', 280, 410, 230, 104, 'Load Balancer', 'api · HTTPS · WAF', 'c-app');
       D.node('api', 620, 395, 250, 104, 'API FastAPI', 'contêiner', 'c-app');
       D.node('otel', 895, 395, 250, 104, 'Coletor OTel', 'sidecar', 'c-sec');
       D.node('rds', 680, 585, 400, 104, 'PostgreSQL 17 (RDS)', 'privado · TLS · criptografado', 'c-data');

@@ -100,8 +100,9 @@
         <svg class="fig flow" width="1700" height="420" viewBox="0 0 1700 420"></svg>
         <div class="scope">
           <div class="scope-row rv" data-at="4"><span class="scope-k">no ar</span>
-            <span class="tag">cadastro e login</span><span class="tag">papéis por proposta</span><span class="tag">geração em tempo real</span>
-            <span class="tag">versões e conflito</span><span class="tag">link com validade</span></div>
+            <span class="tag">login e 2FA</span><span class="tag">papéis por proposta</span><span class="tag">geração em tempo real</span>
+            <span class="tag">versões</span><span class="tag">link com validade</span>
+            <span class="tag">painel inicial</span><span class="tag">direitos LGPD</span></div>
           <div class="scope-row rv" data-at="4" style="--d:.15s"><span class="scope-k">próximos passos</span>
             <span class="tag dim">chat sobre a proposta</span><span class="tag dim">slides gerados</span><span class="tag dim">convites</span>
             <span class="tag dim">cobrança (teste)</span><span class="tag dim">testes de carga</span></div>
