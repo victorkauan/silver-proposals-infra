@@ -67,9 +67,9 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 | Two-factor authentication is optional, and TOTP can be phished | Users choose it; passkeys need more work | Passkeys (WebAuthn); require 2FA for some accounts |
 | Losing the TOTP encryption key disables every enabled 2FA | Secrets Manager retains the key across task and state changes | Key versioning with re-encryption |
 | Historical S3 state versions contain application credentials | State version history is retained for recovery under restricted access | Inventory affected versions and approve retention or cleanup. Preserve the TOTP key through migration |
-| Deprecated share GET requests can expose tokens to ALB logs | Older clients can still call the route | Move clients to the fixed POST path and approve log activation after verification |
+| Deprecated share GET requests can expose tokens to ALB logs | Older clients can still call the route; the web app uses the POST resolver, and no GET requests appeared before log activation | Remove the GET route once no caller uses it |
 | 4 moderate `npm audit` findings (`minimatch` ReDoS through the `shadcn` CLI), dev dependencies only | `shadcn` is now a dev dependency, so production dependencies have no findings; the CLI runs only on a developer's machine | Update when `ts-morph` supports `minimatch` 11 |
-| RDS snapshots only cover one day | The current RDS plan limits automated retention | Validate the daily 14-day S3 logical backups with a staging restore |
+| RDS snapshots only cover one day | The current RDS plan limits automated retention; daily 14-day S3 logical backups cover the gap and a staging restore was verified | Longer RDS retention on a paid plan |
 | Bedrock may keep prompts for abuse detection, depending on the model | AWS default for the model; nothing is shared with the provider | Set the account's data retention mode to `none` where the model allows it |
 
 See also the [data processing record](data-processing.md) and the [OWASP Top 10 table](owasp-top-10.md).

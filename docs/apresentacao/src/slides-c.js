@@ -7,7 +7,7 @@
   const SEC = [
     ['nokey', 'Nenhuma chave estática', 'OIDC na esteira, papéis IAM na aplicação; zero chaves de acesso na conta'],
     ['check', '7 ferramentas de varredura', 'sem vulnerabilidades altas no código integrado'],
-    ['lock', 'Modelo de ameaças e LGPD', '14 ameaças mapeadas, registro de tratamento e lacunas explícitas'],
+    ['lock', 'WAF, duas etapas e LGPD', 'WAF na API, TOTP opcional, backups testados e direitos do titular na aplicação'],
   ];
   S.push({
     id: 'operacao', act: 'Operação', name: 'Segurança e observabilidade',
@@ -25,7 +25,7 @@
           <div class="alarm rv" data-at="2">${K.icon('bell')}<span><b>21 alarmes</b> por e-mail · caminho de alerta testado: ALARM → OK</span></div>
         </div>
       </div>`,
-    note: 'Logs JSON com request ID e trace ID; tokens de links públicos removidos dos logs e dos traces depois de encontrados na verificação em staging.',
+    note: 'Logs JSON com request ID e trace ID; tokens de links públicos removidos dos logs e dos traces depois de encontrados na verificação em staging; a revisão de código encontrou e corrigiu o X-Forwarded-For que anulava os limites por IP.',
     setup(c) {
       const req = c.$('.b-req'), llm = c.$('.b-llm'), vr = c.$('.v-req'), vl = c.$('.v-llm');
       const TOTAL = 8.46, LLM = 7.6;
@@ -48,10 +48,10 @@
 
   /* 8. resultados de engenharia */
   const NUMS = [
-    { v: 94, lbl: 'testes no backend', sub: '98,39% de cobertura', d: 0 },
-    { v: 105, lbl: 'testes no frontend', sub: '94,98% das linhas · 3 e2e', d: 0 },
-    { v: 39, lbl: 'pull requests integrados', sub: 'em três repositórios', d: 0 },
-    { v: 148, lbl: 'execuções da esteira', sub: 'todos os workflows do GitHub', d: 0 },
+    { v: 162, lbl: 'testes no backend', sub: '98,53% de cobertura', d: 0 },
+    { v: 135, lbl: 'testes no frontend', sub: '94,56% das linhas · 5 e2e', d: 0 },
+    { v: 55, lbl: 'pull requests integrados', sub: 'em três repositórios', d: 0 },
+    { v: 242, lbl: 'execuções da esteira', sub: 'todos os workflows do GitHub', d: 0 },
   ];
   S.push({
     id: 'resultados', act: 'Resultados', name: 'Resultados de engenharia',
@@ -67,7 +67,7 @@
           <div class="cb"><span class="cb-l">balanceador e banco compartilhados</span><div class="cb-t"><i class="cb-b"></i></div><span class="cb-v mono v-b">US$ 106</span></div>
         </div>
       </div>`,
-    note: 'Dados de 19/11/2026, do GitHub e das execuções de CI. Produção em app.silversoft.com.br; staging em app-staging.silversoft.com.br.',
+    note: 'Dados de 20/11/2026, do GitHub e das execuções de CI. Produção em app.silversoft.com.br; staging em app-staging.silversoft.com.br.',
     setup(c) {
       const vs = c.$$('.n .v'), b = c.$('.cb-b'), vb = c.$('.v-b'), a = c.$('.cb-a');
       a.style.width = '100%';

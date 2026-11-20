@@ -27,7 +27,7 @@ LGPD (Lei 13.709/2018) for a commercial launch. This is an engineering record, n
 | Application logs | Request ID, method, route template, status, duration, trace ID, event names, error codes | Operation, troubleshooting, security | Legitimate interest (IX) | CloudWatch Logs, us-east-1 | 14 days |
 | Traces | Request URL (share tokens redacted), method, status, user agent, timings, SQL statements without values; client IP attributes are deleted by the collector before export | Performance and troubleshooting | Legitimate interest (IX) | AWS X-Ray, us-east-1 | 30 days (X-Ray fixed retention) |
 | Network flow logs | Source and destination IPs and ports of VPC traffic | Security monitoring | Legitimate interest (IX) | CloudWatch Logs | 14 days |
-| ALB access logs (when enabled) | IP, request time and line, status and delivery details | Security and access records | Legal obligation where applicable (II); legitimate interest (IX) | Restricted S3 archive, us-east-1 | 184 days |
+| ALB access logs | IP, request time and line, status and delivery details | Security and access records | Legal obligation where applicable (II); legitimate interest (IX) | Restricted S3 archive, us-east-1 | 184 days |
 | Backups | Full database snapshot and daily logical dump, including account and proposal data | Recovery | Contract (V); legitimate interest (IX) | RDS automated backups and restricted S3 archives, us-east-1 | 1 day for RDS snapshots; 14 days for scheduled logical dumps |
 
 The application logs route templates. The load balancer records raw request URLs when delivery is enabled. The web app resolves public shares through a fixed API path with the token in the POST body. The deprecated direct GET route can still put a token in a load balancer record. WAF publishes aggregate counters, and application rate limiting keeps IPs in memory.
@@ -60,8 +60,8 @@ The academic deployment uses US hosting and a US Bedrock inference profile. ADR-
 | Transparency (art. 9) | Public privacy notice at `/privacidade`; acceptance recorded at sign-up with version and time; users are asked again when the version changes |
 | Data protection officer (art. 41) | privacidade@silversoft.com.br, published in the notice |
 
-## Release evidence and remaining obligations
+## Remaining obligations
 
-- ALB access logging requires the staged rollout and delivery checks. The retention setting covers the API ALB. Evaluate access-record obligations for all application entry points before commercial launch. [Marco Civil da Internet art. 15](https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2014/lei/l12965.htm), [Decreto 8.771/2016](https://planalto.gov.br/ccivil_03/_ato2015-2018/2016/decreto/d8771.htm).
-- Validate a scheduled upload and a staging restore after applying the backup infrastructure. Copies of deleted records may remain in encrypted backups until expiration. [Restore runbook](../runbooks/database-restore.md).
+- ALB access logging is enabled and verified, with 184-day retention for the API ALB. Evaluate access-record obligations for all application entry points (static CloudFront requests are outside this log) before commercial launch. [Marco Civil da Internet art. 15](https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2014/lei/l12965.htm), [Decreto 8.771/2016](https://planalto.gov.br/ccivil_03/_ato2015-2018/2016/decreto/d8771.htm).
+- Scheduled uploads and a staging restore were verified. Copies of deleted records may remain in encrypted backups until expiration (at most 14 days). [Restore runbook](../runbooks/database-restore.md).
 - Confirm the applicable international transfer mechanism before commercial launch. [ADR-0004](../adr/0004-keep-the-us-region-for-the-academic-deployment.md).
