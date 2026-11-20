@@ -178,3 +178,26 @@ variable "allow_image_push" {
   description = "Whether this environment's deploy role may push images (true only where images are built)."
   type        = bool
 }
+
+variable "initialize_app_secret" {
+  description = "Create the initial Secrets Manager value with write-only inputs. Use only for an empty environment; keep the setting after initialization."
+  type        = bool
+  default     = false
+}
+
+variable "backup_upload_image" {
+  description = "AWS CLI image used by the database backup upload container."
+  type        = string
+  default     = "public.ecr.aws/aws-cli/aws-cli:2.39.6@sha256:eccdb3ec77e159d43ca6a750a70738c546883138be7f094498294a1477ec7e42"
+}
+
+variable "alerts_topic_arn" {
+  description = "SNS topic that receives missing backup and recovery alerts."
+  type        = string
+}
+
+variable "archive_operator_name" {
+  description = "IAM operator authorized to read backup objects with temporary credentials."
+  type        = string
+  default     = "victor-admin"
+}

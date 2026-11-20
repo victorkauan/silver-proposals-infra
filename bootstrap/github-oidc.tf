@@ -51,6 +51,7 @@ data "aws_iam_policy_document" "workload_boundary" {
       "s3:ListBucket",
       "s3:GetObject",
       "s3:PutObject",
+      "s3:AbortMultipartUpload",
       "s3:DeleteObject",
       "cloudfront:CreateInvalidation",
       "cloudfront:GetInvalidation",
@@ -164,8 +165,7 @@ resource "aws_iam_role_policy" "ci_state" {
   policy = data.aws_iam_policy_document.ci_state[each.key].json
 }
 
-# Plan roles: read everything Terraform refreshes, plus the environment's own app secret (refreshing a
-# secret version reads its value). ReadOnlyAccess does not include secret values.
+# Legacy state refresh reads the environment's app secret until its tracked version is removed.
 resource "aws_iam_role_policy_attachment" "plan_read_only" {
   for_each = { for key, role in local.ci_roles : key => role if role.mode == "plan" }
 
@@ -174,19 +174,21 @@ resource "aws_iam_role_policy_attachment" "plan_read_only" {
 }
 
 data "aws_iam_policy_document" "plan_secrets" {
+  for_each = { for key, role in local.ci_roles : key => role if var.allow_legacy_secret_plan_read && role.mode == "plan" && role.environment != "shared" }
+
   statement {
     sid       = "ReadEnvironmentAppSecrets"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:silver-proposals-*"]
+    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:silver-proposals-${each.value.environment}/app-*"]
   }
 }
 
 resource "aws_iam_role_policy" "plan_secrets" {
-  for_each = { for key, role in local.ci_roles : key => role if role.mode == "plan" && role.environment != "shared" }
+  for_each = { for key, role in local.ci_roles : key => role if var.allow_legacy_secret_plan_read && role.mode == "plan" && role.environment != "shared" }
 
   name   = "read-app-secrets"
   role   = aws_iam_role.ci[each.key].id
-  policy = data.aws_iam_policy_document.plan_secrets.json
+  policy = data.aws_iam_policy_document.plan_secrets[each.key].json
 }
 
 # Apply roles: every AWS service except IAM (PowerUserAccess), plus IAM limited to the project's
@@ -199,6 +201,8 @@ resource "aws_iam_role_policy_attachment" "apply_power_user" {
 }
 
 data "aws_iam_policy_document" "apply_iam" {
+  for_each = { for key, role in local.ci_roles : key => role if role.mode == "apply" }
+
   statement {
     sid       = "ReadIam"
     actions   = ["iam:Get*", "iam:List*"]
@@ -246,6 +250,18 @@ data "aws_iam_policy_document" "apply_iam" {
       test     = "StringEquals"
       variable = "iam:PassedToService"
       values   = ["ecs-tasks.amazonaws.com", "vpc-flow-logs.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "PassBackupInvokerToScheduler"
+    actions   = ["iam:PassRole"]
+    resources = ["${local.account_arn}:role/silver-proposals-${each.value.environment}-backup-scheduler"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["scheduler.amazonaws.com"]
     }
   }
 
@@ -298,5 +314,5 @@ resource "aws_iam_role_policy" "apply_iam" {
 
   name   = "project-iam"
   role   = aws_iam_role.ci[each.key].id
-  policy = data.aws_iam_policy_document.apply_iam.json
+  policy = data.aws_iam_policy_document.apply_iam[each.key].json
 }

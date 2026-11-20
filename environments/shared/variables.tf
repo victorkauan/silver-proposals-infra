@@ -9,3 +9,15 @@ variable "budget_alert_emails" {
   type        = list(string)
   sensitive   = true
 }
+
+variable "enforce_waf" {
+  description = "Switch the regional ACL from Count to Block after reviewing the metrics."
+  type        = bool
+  default     = false
+}
+
+variable "enable_access_logs" {
+  description = "Deliver ALB access logs after the frontend uses the body-based public share resolver."
+  type        = bool
+  default     = false
+}

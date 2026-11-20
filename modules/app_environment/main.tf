@@ -24,6 +24,7 @@ module "frontend" {
   host_name          = local.app_host_name
   bucket_name        = "silversoft-silver-proposals-app-${var.environment}"
   certificate_arn    = module.app_certificate.certificate_arn
+  enforce_waf        = var.enforce_waf
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 
   environment              = var.environment
@@ -52,17 +53,19 @@ module "api" {
   database_security_group_id = var.shared.database_security_group_id
   database_master_secret_arn = var.shared.database_master_secret_arn
 
-  image_repository_url = var.shared.ecr_repository_url
-  image_repository_arn = var.shared.ecr_repository_arn
-  allow_image_push     = var.environment == "staging"
-  image_tag            = var.image_tag
-  desired_count        = var.desired_count
+  image_repository_url  = var.shared.ecr_repository_url
+  image_repository_arn  = var.shared.ecr_repository_arn
+  allow_image_push      = var.environment == "staging"
+  image_tag             = var.image_tag
+  desired_count         = var.desired_count
+  initialize_app_secret = var.initialize_app_secret
 
   permissions_boundary_arn = local.permissions_boundary_arn
   github_oidc_provider_arn = local.github_oidc_provider_arn
   github_subject_prefix    = var.backend_github_subject_prefix
 
   cloudflare_zone_id = var.shared.cloudflare_zone_id
+  alerts_topic_arn   = var.shared.alerts_topic_arn
 }
 
 module "monitoring" {

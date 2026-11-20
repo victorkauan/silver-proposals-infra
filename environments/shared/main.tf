@@ -50,11 +50,13 @@ module "api_certificate" {
 module "alb" {
   source = "../../modules/alb"
 
-  name            = local.name
-  vpc_id          = module.network.vpc_id
-  vpc_cidr_block  = module.network.vpc_cidr_block
-  subnet_ids      = module.network.public_subnet_ids
-  certificate_arn = module.api_certificate.certificate_arn
+  name               = local.name
+  vpc_id             = module.network.vpc_id
+  vpc_cidr_block     = module.network.vpc_cidr_block
+  subnet_ids         = module.network.public_subnet_ids
+  certificate_arn    = module.api_certificate.certificate_arn
+  enforce_waf        = var.enforce_waf
+  enable_access_logs = var.enable_access_logs
 }
 
 module "database" {

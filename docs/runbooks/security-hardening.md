@@ -1,0 +1,30 @@
+# Security hardening rollout
+
+Use the [environment apply runbook](apply-environments.md) and the [production release runbook](release-to-production.md). Stage the changes in the order below. Keep the GitHub repository variables used by PR plans aligned with the approved deployment flags. An unset flag means false.
+
+1. Deploy the API resolver `POST /public/proposals/resolve` first. Then deploy the frontend that calls it. Open an existing public link in staging and production and verify that the browser uses the fixed API path. Verify that an expired or revoked link still shows the same unavailable page.
+2. Review the bootstrap plan before applying it with the operator identity. For an existing state that still manages an app secret version, use `allow_legacy_secret_plan_read=true` temporarily. Bootstrap also adds the environment-specific Scheduler PassRole grant and the permission boundary change for backup uploads. Keep `INITIALIZE_APP_SECRET` unset on existing environments.
+3. Review the three root plans, then apply shared, staging and production through the release workflow. The staging and production plans must show the old secret version and random values being forgotten without remote deletion. Verify API readiness, a known local test user's TOTP login in staging, and the new execution roles. With state already migrated in both environments, apply bootstrap with `allow_legacy_secret_plan_read=false` and rerun their PR plans.
+4. The shared ALB and both CloudFront distributions each get an AWS WAF ACL. Start in Count mode. Exercise login, TOTP, generation, Markdown editing with large bodies, proposal viewing and public shares. Check `AWS/WAFV2` CountedRequests by ACL and rule, in us-east-1 for both CloudFront and the ALB. Review unexpected matches using synthetic data. Set `ENFORCE_WAF=true` and deploy after review. Verify both managed groups and the IP rate limit are active. The ALB body-size rule stays in Count to accommodate supported proposal sizes. Request sampling and full WAF request logs are disabled because URLs can contain share tokens.
+5. Query the API CloudWatch log groups for legacy requests before enabling ALB access logs. Investigate any callers still using GET and move them to POST.
+
+   ```text
+   fields @timestamp, method, route, status
+   | filter method = "GET" and route like /^\/public\/proposals\//
+   | stats count(*) by route, bin(1h)
+   ```
+
+   Both ALB log delivery formats include the request line, and direct callers can still use the deprecated token-in-path API. Enable `ENABLE_ALB_ACCESS_LOGS=true` only after the frontend rollout and confirming the residual risk is acceptable. The private archive retains successful deliveries for 184 days. Check the ALB test file, then verify a real synthetic request appears in a delivered object. Capture the bucket lifecycle and ALB settings without opening raw records in a screenshot. The archive covers the API ALB, and static CloudFront requests are outside that log stream.
+6. After the first scheduled upload in each environment, verify one encrypted dump in each bucket and the upload metric. Do the staging drill in [Restore a database backup](database-restore.md).
+
+Revert to Count if WAF blocks an intended flow. If real credentials appear in ALB logs, disable delivery, revoke affected share links and handle those objects through the [incident runbook](security-incident.md). WAF estimates at current published rates are USD 24 monthly across the three ACLs before per-request charges. Review eligibility and billing in the deployed account. [AWS WAF pricing](https://aws.amazon.com/waf/pricing/), [AWS WAF baseline managed rules](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-baseline.html), [ALB access logging](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html).
+
+## Verify state and credential custody
+
+Verify removed resource addresses with `terraform state list`. Never print `terraform state pull` to a terminal or capture it in evidence. The old state object versions still contain credential values. Keep them under existing restricted S3 access, inventory them by metadata, and review a retention or deletion decision before cleaning them up. Rotate JWT and database credentials in a separate approved operation if exposure warrants it. Preserve the TOTP key or explicitly migrate encrypted secrets before rotating that key. AWS manages the RDS master password. The API execution role reads only its environment's app secret, and the setup execution role also reads the RDS master secret.
+
+For a new account, provision the secret values before starting tasks. Use write-only Terraform initialization for a genuinely new database with no existing 2FA secrets. When restoring an existing database, supply the existing TOTP encryption key through Secrets Manager and leave `INITIALIZE_APP_SECRET` unset. Review the plan for unexpected secret-version changes before each deployment.
+
+## Verify Bedrock retention settings
+
+On 2026-11-20, the account in us-east-1 returned `inherit` from `aws bedrock get-account-data-retention --region us-east-1`. `aws bedrock get-model-invocation-logging-configuration --region us-east-1` returned no configuration. Silver Proposals uses text-only Nova 2 Lite. AWS's published abuse-detection table does not list Nova 2 Lite as retaining prompts and responses, and the Nova responsible AI card describes separate image processing. The account inherits AWS's defaults. The account-wide `none` option can affect model availability, so changing it requires an approved setting change and a subsequent model test. Keep invocation logging disabled and repeat both read-only checks in the destination account before cutover. [Bedrock retention controls](https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html), [Bedrock abuse detection](https://docs.aws.amazon.com/bedrock/latest/userguide/abuse-detection.html), [Nova 2 Lite service card](https://docs.aws.amazon.com/ai/responsible-ai/nova-2-lite/overview.html).

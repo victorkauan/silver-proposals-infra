@@ -9,15 +9,18 @@ flowchart LR
   user[Browser]
   cf[Cloudflare DNS<br/>DNS only]
   subgraph envs[Per environment: staging and prod]
-    cdn[CloudFront<br/>app / app-staging]
+    cdn[CloudFront + WAF<br/>app / app-staging]
     s3[(S3 build bucket)]
     svc[ECS Fargate service<br/>API task, public IP]
     sec[Secrets Manager<br/>JWT secret, TOTP key, database URL]
+    dump[Scheduler + Fargate backup]
+    backups[(Private S3 dumps)]
   end
   subgraph shared[Shared]
-    alb[ALB, HTTPS<br/>api / api-staging by host]
+    alb[ALB + WAF, HTTPS<br/>api / api-staging by host]
     rds[(RDS PostgreSQL<br/>one database per environment)]
     ecr[ECR repository]
+    logs[(Private S3 access logs)]
   end
   bedrock[Amazon Bedrock<br/>Nova 2 Lite]
 
@@ -25,6 +28,9 @@ flowchart LR
   user -- HTTPS --> cdn --> s3
   user -- HTTPS --> alb --> svc
   svc --> rds
+  dump --> rds
+  dump --> backups
+  alb -. staged log delivery .-> logs
   svc -- task role, no keys --> bedrock
   svc --> sec
   ecr -. image .-> svc
@@ -60,11 +66,12 @@ flowchart LR
 
 ## Database
 
-- RDS PostgreSQL 17, db.t4g.micro, 20 GB gp3 (autoscaling to 50 GB), encrypted, Single-AZ, 7 days of backups,
+- RDS PostgreSQL 17, db.t4g.micro, 20 GB gp3 (autoscaling to 50 GB), encrypted, Single-AZ, one day of automated snapshots,
   deletion protection, a final snapshot on deletion, TLS required (`rds.force_ssl=1`), logs exported to CloudWatch.
 - The master password is created and stored by RDS in Secrets Manager and is never seen by Terraform.
 - Each environment's apply runs a one-off Fargate task (`psql`) that creates its role and database idempotently
-  (`silver_app_<env>`, `silver_proposals_<env>`) and revokes `CONNECT` from `PUBLIC`.
+  (`silver_app_<env>`, `silver_proposals_<env>`) and revokes `CONNECT` from `PUBLIC`. Only the setup execution role can read the master secret.
+- Scheduler starts a daily logical dump per environment. S3 retains each dump for 14 days. [Restore a database backup](../runbooks/database-restore.md).
 
 ## Frontend
 
@@ -85,7 +92,7 @@ ACM validation records are created in Cloudflare by Terraform. All records are D
 ## Observability
 
 - **Logs:** the API writes JSON lines (request ID, route template, status, duration, trace ID) to
-  `/ecs/silver-proposals-<env>-api`. Health checks are not logged, and raw paths never are (share tokens).
+  `/ecs/silver-proposals-<env>-api`, using route templates to keep share tokens out of application request logs. The staged ALB access logging configuration delivers raw request lines to a private S3 archive for 184 days. [Security hardening rollout](../runbooks/security-hardening.md).
 - **Traces:** an AWS Distro for OpenTelemetry collector sidecar in each task forwards the API's OpenTelemetry traces
   to AWS X-Ray. The task role may only write traces.
 - **Metrics:** ALB, ECS, RDS, and CloudFront metrics, plus metrics from log filters (generations, failures, Bedrock

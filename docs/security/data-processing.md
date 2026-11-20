@@ -27,15 +27,14 @@ LGPD (Lei 13.709/2018) for a commercial launch. This is an engineering record, n
 | Application logs | Request ID, method, route template, status, duration, trace ID, event names, error codes | Operation, troubleshooting, security | Legitimate interest (IX) | CloudWatch Logs, us-east-1 | 14 days |
 | Traces | Request URL (share tokens redacted), method, status, user agent, timings, SQL statements without values; client IP attributes are deleted by the collector before export | Performance and troubleshooting | Legitimate interest (IX) | AWS X-Ray, us-east-1 | 30 days (X-Ray fixed retention) |
 | Network flow logs | Source and destination IPs and ports of VPC traffic | Security monitoring | Legitimate interest (IX) | CloudWatch Logs | 14 days |
-| Backups | Full database snapshot | Recovery | Contract (V); legitimate interest (IX) | RDS automated backups | 1 day (AWS Free plan limit) |
+| ALB access logs (when enabled) | IP, request time and line, status and delivery details | Security and access records | Legal obligation where applicable (II); legitimate interest (IX) | Restricted S3 archive, us-east-1 | 184 days |
+| Backups | Full database snapshot and daily logical dump, including account and proposal data | Recovery | Contract (V); legitimate interest (IX) | RDS automated backups and restricted S3 archives, us-east-1 | 1 day for RDS snapshots; 14 days for scheduled logical dumps |
 
-The application never logs passwords, tokens, briefings, or proposal content, and logs contain the route template
-instead of the raw path. Rate limiting uses the client IP in memory only, for at most one minute.
+The application logs route templates. The load balancer records raw request URLs when delivery is enabled. The web app resolves public shares through a fixed API path with the token in the POST body. The deprecated direct GET route can still put a token in a load balancer record. WAF publishes aggregate counters, and application rate limiting keeps IPs in memory.
 
 ## Security measures (LGPD art. 46)
 
-- **Encryption:** TLS on every hop (CloudFront TLS 1.2+, ALB TLS 1.3 policy, `rds.force_ssl`, AWS SDK over HTTPS);
-  RDS storage, S3, ECR, and secrets encrypted at rest.
+- **Encryption:** HTTPS from browsers to CloudFront and the ALB, TLS to RDS and AWS service APIs, and encryption at rest in RDS, S3, ECR and Secrets Manager. The ALB forwards to API tasks over HTTP inside the VPC, limited by their security groups.
 - **Access control:** owner, editor, and viewer roles on each proposal; non-members get `404`; the database is
   private and accepts only the API's security group; one database user per environment.
 - **Credentials:** Argon2id for passwords; optional TOTP two-factor authentication with encrypted secrets and hashed
@@ -45,14 +44,11 @@ instead of the raw path. Rate limiting uses the client IP in memory only, for at
   production changes need an approval.
 - **Monitoring:** JSON logs, traces, dashboards, and alarms by e-mail. See [Monitoring](../reference/monitoring.md).
 
-Details and threats: [Threat model](threat-model.md).
+See [Threat model](threat-model.md), [Security hardening rollout](../runbooks/security-hardening.md), and [Incident response](../runbooks/security-incident.md).
 
 ## International transfer (LGPD art. 33)
 
-All data is stored and processed in the United States: the AWS us-east-1 Region and Bedrock's US inference profile.
-At this stage the service runs with test data. A commercial launch must either back the transfer with one of the
-mechanisms of art. 33, such as the standard contractual clauses of Resolução CD/ANPD nº 19/2024, or move the
-workload to São Paulo (sa-east-1), which also needs a Bedrock model available there.
+The academic deployment uses US hosting and a US Bedrock inference profile. ADR-0004 records the regional decision and the contractual verification required before commercial launch. [ADR-0004](../adr/0004-keep-the-us-region-for-the-academic-deployment.md).
 
 ## Data subject rights (LGPD art. 18) and transparency
 
@@ -64,11 +60,8 @@ workload to São Paulo (sa-east-1), which also needs a Bedrock model available t
 | Transparency (art. 9) | Public privacy notice at `/privacidade`; acceptance recorded at sign-up with version and time; users are asked again when the version changes |
 | Data protection officer (art. 41) | privacidade@silversoft.com.br, published in the notice |
 
-## Gaps
+## Release evidence and remaining obligations
 
-| Gap | LGPD reference | Plan |
-|---|---|---|
-| Access logs (IP, date, time) kept 14–30 days | Marco Civil da Internet (Lei 12.965/2014), art. 15: 6 months for application providers that are companies | Keep ALB access logs for 6 months in an encrypted, access-controlled bucket (SIL-241) |
-| Data stored outside Brazil without a formal transfer mechanism | Art. 33 | Disclosed in the privacy notice; decision record and formal mechanism before a commercial launch (SIL-241) |
-| No incident response plan for notifying the ANPD and users | Art. 48 | Runbook based on the existing alarms (SIL-241) |
-| Backups kept only 1 day | Art. 46 (availability) | Daily database dump kept 7–30 days (SIL-241) |
+- ALB access logging requires the staged rollout and delivery checks. The retention setting covers the API ALB. Evaluate access-record obligations for all application entry points before commercial launch. [Marco Civil da Internet art. 15](https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2014/lei/l12965.htm), [Decreto 8.771/2016](https://planalto.gov.br/ccivil_03/_ato2015-2018/2016/decreto/d8771.htm).
+- Validate a scheduled upload and a staging restore after applying the backup infrastructure. Copies of deleted records may remain in encrypted backups until expiration. [Restore runbook](../runbooks/database-restore.md).
+- Confirm the applicable international transfer mechanism before commercial launch. [ADR-0004](../adr/0004-keep-the-us-region-for-the-academic-deployment.md).

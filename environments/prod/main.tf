@@ -39,6 +39,8 @@ module "environment" {
   listener_rule_priority = 100
   image_tag              = var.image_tag
   desired_count          = var.desired_count
+  initialize_app_secret  = var.initialize_app_secret
+  enforce_waf            = var.enforce_waf
 
   shared = {
     for key in [

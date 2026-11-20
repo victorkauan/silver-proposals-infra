@@ -9,3 +9,16 @@ variable "desired_count" {
   type        = number
   default     = 0
 }
+
+
+variable "initialize_app_secret" {
+  description = "Create the initial application secret for an empty environment."
+  type        = bool
+  default     = false
+}
+
+variable "enforce_waf" {
+  description = "Switch the edge ACL from Count to Block after reviewing the metrics."
+  type        = bool
+  default     = false
+}

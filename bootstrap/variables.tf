@@ -45,3 +45,9 @@ variable "workload_boundary_name" {
   type        = string
   default     = "silver-proposals-workload-boundary"
 }
+
+variable "allow_legacy_secret_plan_read" {
+  description = "Allow legacy secret value refresh until the environment states remove their old persisted secret versions."
+  type        = bool
+  default     = false
+}
