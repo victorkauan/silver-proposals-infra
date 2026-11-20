@@ -43,3 +43,9 @@ variable "github_subject_prefix" {
     error_message = "github_subject_prefix must be repo:<owner>/<repository> (optionally with @ids), without wildcards."
   }
 }
+
+variable "enforce_waf" {
+  description = "Switch the edge ACL from Count to Block after reviewing the metrics."
+  type        = bool
+  default     = false
+}

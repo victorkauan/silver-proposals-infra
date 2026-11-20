@@ -29,6 +29,9 @@ jobs:
       TF_INPUT: "0"
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_budget_alert_emails: ${{ secrets.BUDGET_ALERT_EMAILS }}
+      TF_VAR_initialize_app_secret: ${{ vars.INITIALIZE_APP_SECRET || 'false' }}
+      TF_VAR_enforce_waf: ${{ vars.ENFORCE_WAF || 'false' }}
+      TF_VAR_enable_access_logs: ${{ vars.ENABLE_ALB_ACCESS_LOGS || 'false' }}
     defaults:
       run:
         working-directory: environments/${{ inputs.root }}

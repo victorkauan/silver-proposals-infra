@@ -29,6 +29,8 @@ jobs:
       changes: ${{ steps.plan.outputs.changes }}
     env:
       TF_VAR_budget_alert_emails: ${{ secrets.BUDGET_ALERT_EMAILS }}
+      TF_VAR_enforce_waf: ${{ vars.ENFORCE_WAF || 'false' }}
+      TF_VAR_enable_access_logs: ${{ vars.ENABLE_ALB_ACCESS_LOGS || 'false' }}
     defaults:
       run:
         working-directory: environments/shared

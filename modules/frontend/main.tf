@@ -80,14 +80,22 @@ data "aws_cloudfront_response_headers_policy" "security" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
-#trivy:ignore:AWS-0011 No WAF in v1 (cost); the site is static and read-only.
+module "waf" {
+  source = "../web_acl"
+
+  name          = "silver-proposals-${var.environment}-edge"
+  scope         = "CLOUDFRONT"
+  request_limit = 1500
+  enforce       = var.enforce_waf
+}
+
 resource "aws_cloudfront_distribution" "site" {
-  #checkov:skip=CKV_AWS_68:No WAF in v1 (cost); the site is static and read-only.
   #checkov:skip=CKV_AWS_86:Access logging is covered by the observability work.
   #checkov:skip=CKV_AWS_310:A single S3 origin; failover is not needed for a static site.
   #checkov:skip=CKV_AWS_374:The audience is not restricted by country.
-  #checkov:skip=CKV2_AWS_47:No WAF in v1, so the Log4j rule set does not apply; there is no Java at the edge.
+  #checkov:skip=CKV2_AWS_47:The Known Bad Inputs managed group covers Log4j signatures; the distribution serves static assets.
   #checkov:skip=CKV2_AWS_32:The managed SecurityHeadersPolicy is attached.
+  web_acl_id          = module.waf.arn
   enabled             = true
   is_ipv6_enabled     = true
   comment             = var.host_name

@@ -48,3 +48,7 @@ aws cloudwatch set-alarm-state --alarm-name silver-proposals-staging-api-errors 
 ```
 
 The alarm returns to `OK` at its next evaluation, which sends the recovery e-mail.
+
+## WAF and daily backups
+
+AWS WAF publishes CountedRequests and BlockedRequests metrics by ACL and rule. Use the rollout runbook when reviewing managed rules or IP limits. Each environment's `*-backup-missing` alarm fires after two missing daily UTC upload periods. Inspect the `backup/` log streams and stopped ECS tasks, then verify the S3 object before closing the alarm. Follow the incident runbook if the evidence suggests personal data was affected. [Security rollout](../runbooks/security-hardening.md), [Restore a database backup](../runbooks/database-restore.md), [Security incident response](../runbooks/security-incident.md).

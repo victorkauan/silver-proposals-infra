@@ -34,8 +34,7 @@ resource "aws_vpc_security_group_egress_rule" "to_vpc" {
 
 #trivy:ignore:AWS-0053 The load balancer is the public HTTPS entry point of the API by design.
 resource "aws_lb" "this" {
-  #checkov:skip=CKV_AWS_91:Access logs need a dedicated bucket; request logging comes with the observability work.
-  #checkov:skip=CKV2_AWS_28:No WAF in v1 (cost); rate limiting is enforced by the API.
+  #checkov:skip=CKV_AWS_91:Access logging is enabled after the body-based public link resolver is deployed.
   name                       = var.name
   load_balancer_type         = "application"
   internal                   = false
@@ -45,6 +44,14 @@ resource "aws_lb" "this" {
   enable_deletion_protection = var.deletion_protection
   # Proposal generation streams for up to a few minutes; keep idle connections open long enough.
   idle_timeout = var.idle_timeout_seconds
+
+  access_logs {
+    bucket  = module.access_logs.id
+    prefix  = "access"
+    enabled = var.enable_access_logs
+  }
+
+  depends_on = [aws_s3_bucket_policy.access_logs]
 }
 
 resource "aws_lb_listener" "http" {
@@ -79,4 +86,18 @@ resource "aws_lb_listener" "https" {
       status_code  = "404"
     }
   }
+}
+
+module "waf" {
+  source = "../web_acl"
+
+  name          = "${var.name}-api"
+  scope         = "REGIONAL"
+  request_limit = 1000
+  enforce       = var.enforce_waf
+}
+
+resource "aws_wafv2_web_acl_association" "this" {
+  resource_arn = aws_lb.this.arn
+  web_acl_arn  = module.waf.arn
 }

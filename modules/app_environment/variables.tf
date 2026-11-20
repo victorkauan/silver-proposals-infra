@@ -72,3 +72,16 @@ variable "frontend_github_subject_prefix" {
   type        = string
   default     = "repo:victorkauan@71532562/silver-proposals-frontend@1460352038"
 }
+
+
+variable "initialize_app_secret" {
+  description = "Create the initial Secrets Manager value with write-only inputs. Use only for an empty environment; keep the setting after initialization."
+  type        = bool
+  default     = false
+}
+
+variable "enforce_waf" {
+  description = "Switch the edge ACL from Count to Block after reviewing the metrics."
+  type        = bool
+  default     = false
+}
