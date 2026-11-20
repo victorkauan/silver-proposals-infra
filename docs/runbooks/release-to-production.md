@@ -32,6 +32,16 @@ Migrations run before the rollout, as a one-off Fargate task with the new image 
 `DATABASE_URL`. If they fail, the deploy stops and the running version keeps serving. Migrations must stay
 backward compatible with the version that is still running (add first, remove in a later release).
 
+## Two-factor authentication rollout
+
+Apply the infrastructure change in staging and production before deploying the backend release that requires
+`TOTP_ENCRYPTION_KEY`. The backend deploy copies the latest task definition before running migrations, so that
+revision must already reference the key in Secrets Manager. Deploy the backend before the frontend, whose browser
+tests run against the backend's main branch.
+
+Keep the encryption key with the corresponding database backups. Replacing the key by itself makes existing
+authenticator secrets unreadable and invalidates the corresponding recovery codes.
+
 ## Rollback
 
 | What | How |

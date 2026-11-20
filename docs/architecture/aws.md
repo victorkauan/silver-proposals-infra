@@ -12,7 +12,7 @@ flowchart LR
     cdn[CloudFront<br/>app / app-staging]
     s3[(S3 build bucket)]
     svc[ECS Fargate service<br/>API task, public IP]
-    sec[Secrets Manager<br/>JWT secret, database URL]
+    sec[Secrets Manager<br/>JWT secret, TOTP key, database URL]
   end
   subgraph shared[Shared]
     alb[ALB, HTTPS<br/>api / api-staging by host]
@@ -53,7 +53,7 @@ flowchart LR
 - The ALB checks `/ready` (database included) and keeps idle connections for 300 seconds, so streamed
   generation is not cut off.
 - Configuration: `ENVIRONMENT`, `CORS_ORIGINS` (the environment's app URL), `AI_PROVIDER=bedrock`,
-  `BEDROCK_MODEL_ID`, `BEDROCK_REGION`; secrets `JWT_SECRET` and `DATABASE_URL` from Secrets Manager.
+  `BEDROCK_MODEL_ID`, `BEDROCK_REGION`; secrets `JWT_SECRET`, `TOTP_ENCRYPTION_KEY`, and `DATABASE_URL` from Secrets Manager.
 - **Bedrock without keys:** the task role may call `InvokeModel` and `InvokeModelWithResponseStream` on the
   inference profile `us.amazon.nova-2-lite-v1:0`, and on the Nova 2 Lite foundation model in the three regions the
   profile routes to (us-east-1, us-east-2, us-west-2), only when the call comes through that profile.

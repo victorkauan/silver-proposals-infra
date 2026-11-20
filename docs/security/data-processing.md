@@ -19,7 +19,8 @@ LGPD (Lei 13.709/2018) for a commercial launch. This is an engineering record, n
 | Activity | Data | Purpose | Legal basis (LGPD art. 7) | Where | Retention |
 |---|---|---|---|---|---|
 | Account | Name, e-mail, Argon2id password hash, accepted privacy notice version and time, timestamps | Sign-in, identifying the author of each version, and proof of the notice acceptance | Contract (V) | RDS `users`, us-east-1 | Until the user deletes the account (self-service) |
-| Sessions | Refresh token SHA-256 hash, session family, expiry, use and revocation times | Keeping the user signed in; detecting stolen tokens | Contract (V); legitimate interest in security (IX) | RDS `refresh_tokens` | 7 days of validity; expired rows are deleted by the API every 6 hours |
+| Sessions | Refresh token SHA-256 hash, session family and start, browser (`User-Agent`, up to 255 characters), expiry, use and revocation times | Keeping the user signed in; detecting stolen tokens; letting the user see and end sessions | Contract (V); legitimate interest in security (IX) | RDS `refresh_tokens` | 7 days of validity; expired rows are deleted by the API every 6 hours |
+| Two-factor authentication | TOTP secret (AES-256-GCM), last accepted code step, recovery code hashes (HMAC-SHA256), enable time | Protecting the account against a leaked password | Contract (V); legitimate interest in security (IX) | RDS `users`, `recovery_codes` | Until the user turns 2FA off or deletes the account |
 | Proposals | Title, client name, briefing, content, versions with author and time | The service itself | Contract (V) | RDS `proposals`, `proposal_versions` | Until the owner deletes the proposal; deletion removes versions, members, and share links (cascade) |
 | Generation | Briefing and instructions sent as the prompt; generated text | Writing the proposal draft | Contract (V) | Amazon Bedrock, US inference profile (us-east-1, us-east-2, us-west-2) | Not shared with the model provider and not used to train models; AWS may keep it for abuse detection depending on the model |
 | Share links | Token SHA-256 hash, expiry, creator, revocation time | Read-only access for the user's client | Contract (V) | RDS `share_links` | Link valid 1–90 days; the row stays until the proposal is deleted |
@@ -37,7 +38,8 @@ instead of the raw path. Rate limiting uses the client IP in memory only, for at
   RDS storage, S3, ECR, and secrets encrypted at rest.
 - **Access control:** owner, editor, and viewer roles on each proposal; non-members get `404`; the database is
   private and accepts only the API's security group; one database user per environment.
-- **Credentials:** Argon2id for passwords; short-lived JWTs; rotating refresh tokens in `httpOnly` cookies; opaque,
+- **Credentials:** Argon2id for passwords; optional TOTP two-factor authentication with encrypted secrets and hashed
+  recovery codes; sessions the user can list and end; short-lived JWTs; rotating refresh tokens in `httpOnly` cookies; opaque,
   hashed share tokens; runtime secrets in AWS Secrets Manager; Bedrock through an IAM role, with no API keys.
 - **Least privilege in the cloud:** CI uses GitHub OIDC with one role per environment under a permissions boundary;
   production changes need an approval.
