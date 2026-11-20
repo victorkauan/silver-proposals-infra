@@ -15,12 +15,28 @@ locals {
   ]
   bedrock_profile_arn = "arn:${local.partition}:bedrock:${var.region}:${local.account_id}:inference-profile/${var.bedrock_model_id}"
 
+  # Client IPs are personal data (LGPD) and not needed for troubleshooting: drop them before export.
+  client_ip_attributes = [
+    "client.address", "http.client_ip", "net.peer.ip", "net.sock.peer.addr", "network.peer.address",
+    "http.request.header.x_forwarded_for",
+  ]
   otel_collector_config = yamlencode({
-    receivers  = { otlp = { protocols = { http = { endpoint = "127.0.0.1:4318" } } } }
-    processors = { batch = {} }
-    exporters  = { awsxray = { region = var.region } }
+    receivers = { otlp = { protocols = { http = { endpoint = "127.0.0.1:4318" } } } }
+    processors = {
+      "attributes/drop_client_ip" = {
+        actions = [for key in local.client_ip_attributes : { key = key, action = "delete" }]
+      }
+      batch = {}
+    }
+    exporters = { awsxray = { region = var.region } }
     service = {
-      pipelines = { traces = { receivers = ["otlp"], processors = ["batch"], exporters = ["awsxray"] } }
+      pipelines = {
+        traces = {
+          receivers  = ["otlp"]
+          processors = ["attributes/drop_client_ip", "batch"]
+          exporters  = ["awsxray"]
+        }
+      }
     }
   })
 }
