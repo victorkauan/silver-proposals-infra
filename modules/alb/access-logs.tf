@@ -2,8 +2,6 @@ data "aws_caller_identity" "current" {}
 
 data "aws_partition" "current" {}
 
-data "aws_region" "current" {}
-
 module "access_logs" {
   source = "../private_archive"
 
@@ -21,12 +19,6 @@ data "aws_iam_policy_document" "access_logs" {
       type        = "Service"
       identifiers = ["logdelivery.elasticloadbalancing.amazonaws.com"]
     }
-
-    condition {
-      test     = "ArnLike"
-      variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.current.partition}:elasticloadbalancing:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}/*"]
-    }
   }
 
   statement {
@@ -43,6 +35,12 @@ data "aws_iam_policy_document" "access_logs" {
     condition {
       test     = "Bool"
       variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:PrincipalIsAWSService"
       values   = ["false"]
     }
   }

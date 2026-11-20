@@ -54,10 +54,12 @@ jobs:
       - run: terraform init -input=false
 
       - name: terraform plan
-        run: terraform plan -input=false -no-color -lock-timeout=120s -out=tfplan | tee plan.txt
+        shell: bash
+        run: terraform plan -input=false -no-color -lock-timeout=120s -out=tfplan 2>&1 | tee plan.txt
 
       - name: terraform apply
-        run: terraform apply -input=false -no-color -lock-timeout=120s tfplan | tee apply.txt
+        shell: bash
+        run: terraform apply -input=false -no-color -lock-timeout=120s tfplan 2>&1 | tee apply.txt
 
       - name: Summary
         if: always()
