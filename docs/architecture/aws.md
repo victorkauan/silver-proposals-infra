@@ -54,7 +54,8 @@ flowchart LR
 ## API
 
 - ECS Fargate, 0.25 vCPU and 1 GB (the API plus the collector sidecar), x86_64, read-only root file system, public IP, circuit breaker with rollback.
-- Uvicorn runs with `--proxy-headers`, so the rate limits see the client IP from the ALB's `X-Forwarded-For`.
+- Uvicorn runs with `--proxy-headers` and trusts forwarded headers only from the VPC CIDR (the ALB), so the rate limits see
+  the client IP the ALB appends to `X-Forwarded-For`. With `*`, Uvicorn would take the leftmost entry, which the client sets.
   This is safe because only the ALB can reach the tasks.
 - The ALB checks `/ready` (database included) and keeps idle connections for 300 seconds, so streamed
   generation is not cut off.

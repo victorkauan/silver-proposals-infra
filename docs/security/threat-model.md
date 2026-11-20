@@ -43,7 +43,7 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 
 | # | STRIDE | Threat | Mitigation | Where |
 |---|---|---|---|---|
-| T1 | Spoofing | Password guessing, credential stuffing, or a leaked password | Argon2id hashes; login limited to 5/min and sign-up to 3/min per IP; same error for unknown e-mail and wrong password; optional TOTP two-factor authentication (RFC 6238) with single-use recovery codes, codes never accepted twice, attempts limited per IP (5/min) and per account (10 per 15 min) | backend `features/auth`, `features/security` |
+| T1 | Spoofing | Password guessing, credential stuffing, or a leaked password | Argon2id hashes; login limited to 5/min and sign-up to 3/min per IP (the client IP is the one the ALB appends to `X-Forwarded-For`; Uvicorn trusts only the VPC range, so a client-set header cannot pick the IP); a per-IP WAF rate rule at the edge; same error for unknown e-mail and wrong password; optional TOTP two-factor authentication (RFC 6238) with single-use recovery codes, codes never accepted twice, attempts limited per IP (5/min) and per account (10 per 15 min) | backend `features/auth`, `features/security` |
 | T2 | Spoofing | Stolen session | Access token lives 15 min in memory only; refresh token in a `Secure`, `httpOnly`, `SameSite=Strict` cookie, rotated on every use; reusing a rotated token revokes the whole session family; the user can list sessions and end one or all others, effective on the next request (the access token carries the session ID, checked on every request); a password change ends every other session | backend `features/auth`, `features/security` |
 | T15 | Information disclosure | Database dump or backup reveals second factors | TOTP secrets encrypted with AES-256-GCM (key in Secrets Manager, user ID as associated data); recovery codes stored only as keyed hashes | backend `features/auth/two_factor.py`, `modules/api_service` |
 | T3 | Elevation of privilege | User reads or edits another user's proposal (IDOR) | Every proposal route checks membership and role (owner, editor, viewer); non-members get `404`, so IDs reveal nothing | backend `features/proposals/service.py` |
@@ -63,7 +63,6 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 
 | Risk | Why accepted now | What would fix it |
 |---|---|---|
-| WAF starts in Count mode | Measure false positives for login, sharing and Markdown before blocking | Enable managed-group and rate enforcement after testing |
 | Rate limits live in each task's memory | Each environment runs one task | A shared store (for example ElastiCache) when scaling out |
 | Two-factor authentication is optional, and TOTP can be phished | Users choose it; passkeys need more work | Passkeys (WebAuthn); require 2FA for some accounts |
 | Losing the TOTP encryption key disables every enabled 2FA | Secrets Manager retains the key across task and state changes | Key versioning with re-encryption |
