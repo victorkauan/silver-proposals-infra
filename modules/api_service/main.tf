@@ -2,6 +2,10 @@ data "aws_caller_identity" "current" {}
 
 data "aws_partition" "current" {}
 
+data "aws_vpc" "this" {
+  id = var.vpc_id
+}
+
 locals {
   name       = "silver-proposals-${var.environment}"
   partition  = data.aws_partition.current.partition
@@ -330,12 +334,12 @@ resource "aws_ecs_task_definition" "api" {
       name      = "api"
       image     = "${var.image_repository_url}:${var.image_tag}"
       essential = true
-      # Tasks only accept traffic from the ALB, so trusting its X-Forwarded-For header for the
-      # client IP (used by the rate limits) is safe.
+      # Only the ALB (inside the VPC) is trusted: with "*" Uvicorn takes the leftmost, client-set
+      # X-Forwarded-For entry, so the per-IP rate limits could be bypassed.
       # The app logs each request itself; Uvicorn's access log would print raw paths with share tokens.
       command = [
         "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", tostring(var.container_port),
-        "--proxy-headers", "--forwarded-allow-ips", "*", "--no-access-log",
+        "--proxy-headers", "--forwarded-allow-ips", data.aws_vpc.this.cidr_block, "--no-access-log",
       ]
       healthCheck = {
         command     = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:${var.container_port}/health', timeout=3)\""]
