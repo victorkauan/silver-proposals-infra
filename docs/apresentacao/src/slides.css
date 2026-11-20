@@ -96,7 +96,7 @@
 .cb-a { background: var(--ink-3); } .cb-b { background: var(--data); width: 100%; }
 .cb-v { font-size: 26px; text-align: right; color: var(--ink); }
 
-/* ── 8. fase 2 e encerramento ─────────────────────────────────────────── */
+/* ── 10. próximos passos e encerramento ──────────────────────────────── */
 .next { list-style: none; margin: 30px 0 0; padding: 0; counter-reset: n; width: 960px; display: grid; gap: 26px; }
 .next li { counter-increment: n; display: grid; grid-template-columns: 70px 1fr; column-gap: 10px; }
 .next li::before { content: counter(n, decimal-leading-zero); grid-row: span 2; font: 600 24px/1.4 var(--f-mono); color: var(--ink-3); }
@@ -105,3 +105,25 @@
 .thanks { position: absolute; left: 1080px; top: 40px; width: 620px; }
 .thanks .serif { font: italic 500 120px/1 var(--f-display); margin: 0 0 50px; }
 .thanks .links { display: grid; gap: 14px; font-size: 20px; color: var(--ink-2); }
+
+/* ── 3. IA genérica ───────────────────────────────────────────────────── */
+.risks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 10px; }
+.rk { padding: 34px 34px 30px; border-radius: 16px; border: 1.5px solid var(--line-2); background: var(--surface); min-height: 400px; display: flex; flex-direction: column; }
+.rk-h { display: flex; align-items: center; gap: 16px; }
+.rk-h .ic { font-size: 40px; color: var(--bad); }
+.rk-h b { font: 600 34px/1.2 var(--f-sans); }
+.rk-r { margin: 24px 0 0; font: 400 26px/1.4 var(--f-sans); color: var(--ink-2); flex: 1; }
+.rk-a { margin: 26px 0 0; padding-top: 22px; border-top: 1px solid var(--line); display: flex; gap: 14px; align-items: flex-start; font: 500 23px/1.35 var(--f-sans); color: var(--ink); }
+.rk-a .ic { font-size: 30px; color: var(--good); margin-top: 1px; }
+.rk-f { position: absolute; left: 0; bottom: 40px; font: 400 26px/1.35 var(--f-sans); color: var(--ink-2); }
+.rk-f b { color: var(--ink); font-weight: 600; }
+.rk-f .src { margin-left: 14px; font: 500 18px/1 var(--f-mono); color: var(--ink-3); }
+
+/* ── 9. avaliação com propostas reais ─────────────────────────────────── */
+.nums.ev { grid-template-columns: repeat(3, 1fr); gap: 70px; }
+.nums.ev .num { font-size: 120px; }
+.nums.ev .num small { font-size: 0.55em; letter-spacing: -0.01em; }
+.s-avaliacao .cost { top: 330px; }
+.finding { position: absolute; left: 0; bottom: 40px; display: flex; gap: 16px; align-items: flex-start; max-width: 1600px; font: 400 25px/1.4 var(--f-sans); color: var(--ink-2); }
+.finding .ic { font-size: 32px; color: var(--cloud-ink); margin-top: 3px; }
+.finding b { color: var(--ink); font-weight: 600; }

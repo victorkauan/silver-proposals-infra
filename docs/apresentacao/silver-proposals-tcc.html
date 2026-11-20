@@ -281,7 +281,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 .cb-a { background: var(--ink-3); } .cb-b { background: var(--data); width: 100%; }
 .cb-v { font-size: 26px; text-align: right; color: var(--ink); }
 
-/* ── 8. fase 2 e encerramento ─────────────────────────────────────────── */
+/* ── 10. próximos passos e encerramento ──────────────────────────────── */
 .next { list-style: none; margin: 30px 0 0; padding: 0; counter-reset: n; width: 960px; display: grid; gap: 26px; }
 .next li { counter-increment: n; display: grid; grid-template-columns: 70px 1fr; column-gap: 10px; }
 .next li::before { content: counter(n, decimal-leading-zero); grid-row: span 2; font: 600 24px/1.4 var(--f-mono); color: var(--ink-3); }
@@ -290,6 +290,28 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 .thanks { position: absolute; left: 1080px; top: 40px; width: 620px; }
 .thanks .serif { font: italic 500 120px/1 var(--f-display); margin: 0 0 50px; }
 .thanks .links { display: grid; gap: 14px; font-size: 20px; color: var(--ink-2); }
+
+/* ── 3. IA genérica ───────────────────────────────────────────────────── */
+.risks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 10px; }
+.rk { padding: 34px 34px 30px; border-radius: 16px; border: 1.5px solid var(--line-2); background: var(--surface); min-height: 400px; display: flex; flex-direction: column; }
+.rk-h { display: flex; align-items: center; gap: 16px; }
+.rk-h .ic { font-size: 40px; color: var(--bad); }
+.rk-h b { font: 600 34px/1.2 var(--f-sans); }
+.rk-r { margin: 24px 0 0; font: 400 26px/1.4 var(--f-sans); color: var(--ink-2); flex: 1; }
+.rk-a { margin: 26px 0 0; padding-top: 22px; border-top: 1px solid var(--line); display: flex; gap: 14px; align-items: flex-start; font: 500 23px/1.35 var(--f-sans); color: var(--ink); }
+.rk-a .ic { font-size: 30px; color: var(--good); margin-top: 1px; }
+.rk-f { position: absolute; left: 0; bottom: 40px; font: 400 26px/1.35 var(--f-sans); color: var(--ink-2); }
+.rk-f b { color: var(--ink); font-weight: 600; }
+.rk-f .src { margin-left: 14px; font: 500 18px/1 var(--f-mono); color: var(--ink-3); }
+
+/* ── 9. avaliação com propostas reais ─────────────────────────────────── */
+.nums.ev { grid-template-columns: repeat(3, 1fr); gap: 70px; }
+.nums.ev .num { font-size: 120px; }
+.nums.ev .num small { font-size: 0.55em; letter-spacing: -0.01em; }
+.s-avaliacao .cost { top: 330px; }
+.finding { position: absolute; left: 0; bottom: 40px; display: flex; gap: 16px; align-items: flex-start; max-width: 1600px; font: 400 25px/1.4 var(--f-sans); color: var(--ink-2); }
+.finding .ic { font-size: 32px; color: var(--cloud-ink); margin-top: 3px; }
+.finding b { color: var(--ink); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -427,7 +449,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 })();
 </script>
 <script>
-/* slides-a.js — capa, problema e produto (slides 1 a 3). */
+/* slides-a.js — capa, problema, IA genérica e produto (slides 1 a 4). */
 (function () {
   'use strict';
   const K = window.K, S = window.SLIDES;
@@ -469,9 +491,9 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 
   /* 2. problema: três números de fontes publicadas */
   const STATS = [
-    { v: 70, d: 0, suf: '%', lbl: 'do tempo dos vendedores vai para tarefas que <b>não são vender</b>', src: 'Salesforce, State of Sales (2024)' },
+    { v: 60, d: 0, suf: '%', lbl: 'do tempo dos vendedores vai para tarefas que <b>não são vender</b>', src: 'Salesforce, State of Sales, 7ª ed. (2026)' },
     { v: 40, d: 0, suf: '%', pre: '−', lbl: 'de tempo em tarefas de <b>escrita profissional</b> com IA generativa, e 18% mais qualidade', src: 'Noy e Zhang, Science (2023)' },
-    { v: 13, d: 0, suf: '%', lbl: 'das empresas brasileiras <b>usavam IA</b> em 2024', src: 'Cetic.br, TIC Empresas 2024 (2025)' },
+    { v: 17, d: 0, suf: '%', lbl: 'das empresas brasileiras <b>usavam IA</b> em 2025', src: 'Cetic.br, TIC Empresas 2025 (2026)' },
   ];
   S.push({
     id: 'problema', act: 'Contexto', name: 'O problema',
@@ -494,15 +516,41 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
     },
   });
 
-  /* 3. produto: o ciclo da proposta na v1 */
+  /* 3. IA genérica: acelera a escrita, mas tira a proposta do controle da empresa */
+  const RISKS = [
+    ['eye', 'Governança', 'Não registra quem gerou o quê, não guarda versões e não controla quem vê o documento.',
+      'Papéis por proposta, histórico com autor e links revogáveis'],
+    ['lock', 'Confidencialidade', 'O briefing leva preços, estratégia e dados do cliente para contas pessoais, fora da LGPD.',
+      'Modelo acessado pela conta da empresa; dados não vão ao fornecedor do modelo'],
+    ['cross', 'Riscos de LLM', 'Injeção de prompt e divulgação de informações sensíveis estão no OWASP Top 10 para LLMs.',
+      'Briefing tratado como dado, regras fixas no servidor e revisão humana'],
+  ];
   S.push({
-    id: 'produto', act: 'Solução', name: 'O produto e o recorte da v1',
+    id: 'ia-generica', act: 'Contexto', name: 'IA genérica não basta',
+    title: 'Uma IA genérica <em>acelera a escrita</em>, mas tira a proposta do controle da empresa',
+    html: `
+      <div class="body">
+        <div class="risks">${RISKS.map(([ic, t, r, a], i) => `
+          <div class="rk rv" data-at="${i}">
+            <div class="rk-h">${K.icon(ic)}<b>${t}</b></div>
+            <p class="rk-r">${r}</p>
+            <p class="rk-a rv" data-at="3" style="--d:${i * 0.15}s">${K.icon('check')}<span>${a}</span></p>
+          </div>`).join('')}
+        </div>
+        <div class="rk-f rv" data-at="4"><b>80%</b> das empresas brasileiras que usam IA adotam soluções prontas: o risco já está na rotina. <span class="src">Cetic.br (2026) · OWASP (2025)</span></div>
+      </div>`,
+    setup() { return [0, 1, 2, 3, 4].map(() => ({ dur: 700, draw() {} })); },
+  });
+
+  /* 4. produto: o ciclo da proposta */
+  S.push({
+    id: 'produto', act: 'Solução', name: 'O produto',
     title: 'Do <em>briefing</em> à proposta compartilhada, com a IA escrevendo e o usuário no controle',
     html: `
       <div class="body">
         <svg class="fig flow" width="1700" height="420" viewBox="0 0 1700 420"></svg>
         <div class="scope">
-          <div class="scope-row rv" data-at="4"><span class="scope-k">versão 1 · no ar</span>
+          <div class="scope-row rv" data-at="4"><span class="scope-k">no ar</span>
             <span class="tag">cadastro e login</span><span class="tag">papéis por proposta</span><span class="tag">geração em tempo real</span>
             <span class="tag">versões e conflito</span><span class="tag">link com validade</span></div>
           <div class="scope-row rv" data-at="4" style="--d:.15s"><span class="scope-k">próximos passos</span>
@@ -655,7 +703,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
 })();
 </script>
 <script>
-/* slides-c.js — segurança, observabilidade e resultados (slides 6 e 7). Números reais da v1. */
+/* slides-c.js — segurança, observabilidade, resultados e avaliação (slides 7 a 9). Números reais do projeto. */
 (function () {
   'use strict';
   const K = window.K, S = window.SLIDES;
@@ -663,7 +711,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
   /* 6. segurança e observabilidade */
   const SEC = [
     ['nokey', 'Nenhuma chave estática', 'OIDC na esteira, papéis IAM na aplicação; zero chaves de acesso na conta'],
-    ['check', '7 ferramentas de varredura', 'sem vulnerabilidades altas na versão integrada'],
+    ['check', '7 ferramentas de varredura', 'sem vulnerabilidades altas no código integrado'],
     ['lock', 'Modelo de ameaças e LGPD', '14 ameaças mapeadas, registro de tratamento e lacunas explícitas'],
   ];
   S.push({
@@ -703,7 +751,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
     },
   });
 
-  /* 7. resultados da v1 */
+  /* 8. resultados de engenharia */
   const NUMS = [
     { v: 94, lbl: 'testes no backend', sub: '98,39% de cobertura', d: 0 },
     { v: 105, lbl: 'testes no frontend', sub: '94,98% das linhas · 3 e2e', d: 0 },
@@ -711,7 +759,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
     { v: 148, lbl: 'execuções da esteira', sub: 'todos os workflows do GitHub', d: 0 },
   ];
   S.push({
-    id: 'resultados', act: 'Operação', name: 'Resultados da v1',
+    id: 'resultados', act: 'Resultados', name: 'Resultados de engenharia',
     title: 'De repositórios vazios a <em>dois ambientes em produção</em>, com evidências',
     html: `
       <div class="body">
@@ -724,7 +772,7 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
           <div class="cb"><span class="cb-l">balanceador e banco compartilhados</span><div class="cb-t"><i class="cb-b"></i></div><span class="cb-v mono v-b">US$ 106</span></div>
         </div>
       </div>`,
-    note: 'Dados de 19/11/2026, do GitHub e das execuções de CI. A v1 está em app.silversoft.com.br; staging em app-staging.silversoft.com.br.',
+    note: 'Dados de 19/11/2026, do GitHub e das execuções de CI. Produção em app.silversoft.com.br; staging em app-staging.silversoft.com.br.',
     setup(c) {
       const vs = c.$$('.n .v'), b = c.$('.cb-b'), vb = c.$('.v-b'), a = c.$('.cb-a');
       a.style.width = '100%';
@@ -741,10 +789,51 @@ body.print .pn { display: block; position: absolute; right: 110px; bottom: 38px;
       ];
     },
   });
+
+  /* 9. avaliação com propostas reais e custo por proposta */
+  const EVAL = [
+    { v: 3.4, d: 1, suf: ' s', lbl: 'para o rascunho completo', sub: 'mediana de 30 gerações em staging' },
+    { v: 290, d: 0, suf: '/291', lbl: 'fatos do briefing reproduzidos', sub: '10 propostas reais, 3 gerações cada' },
+    { v: 0.07, d: 2, pre: 'R$ ', lbl: 'de IA por proposta, no máximo', sub: 'Nova 2 Lite, até 4.096 tokens de saída' },
+  ];
+  const ADDITIONS = { before: 57, after: 10 };
+  S.push({
+    id: 'avaliacao', act: 'Resultados', name: 'Avaliação com propostas reais',
+    title: 'Com dez propostas reais, o rascunho sai em <em>segundos</em> e a IA custa centavos',
+    html: `
+      <div class="body">
+        <div class="nums ev">${EVAL.map((n, i) => `
+          <div class="n rv" data-at="0" style="--d:${i * 0.12}s"><div class="num">${n.pre ? `<small>${n.pre}</small>` : ''}<span class="v">0</span>${n.suf ? `<small>${n.suf}</small>` : ''}</div><p class="lbl">${n.lbl}</p><p class="src">${n.sub}</p></div>`).join('')}
+        </div>
+        <div class="cost rv" data-at="1">
+          <div class="cost-hd">custo de uma proposta · 27 h de referência a R$ 50,68/h · −40% de tempo com IA</div>
+          <div class="cb"><span class="cb-l">escrita à mão</span><div class="cb-t"><i class="cb-a"></i></div><span class="cb-v mono">R$ 1.368</span></div>
+          <div class="cb"><span class="cb-l">com o Silver Proposals</span><div class="cb-t"><i class="cb-b"></i></div><span class="cb-v mono v-b">R$ 1.368</span></div>
+        </div>
+        <div class="finding rv" data-at="2">${K.icon('eye')}<span><b>A avaliação achou o que os testes não pegam:</b> sem regras explícitas, o modelo completava lacunas com condições comerciais plausíveis em ${ADDITIONS.before}% das saídas. Corrigido o prompt pela esteira e medido de novo: <b>${ADDITIONS.after}%</b>.</span></div>
+      </div>`,
+    note: 'Salário: Robert Half, Guia Salarial 2027 (executivo de contas, P/M). Horas: Loopio (2026), 27 h por RFP em PMEs. Redução: Noy e Zhang (2023). Preços: AWS Price List; PTAX de 19/11/2026.',
+    setup(c) {
+      const vs = c.$$('.n .v'), b = c.$('.cb-b'), vb = c.$('.v-b'), a = c.$('.cb-a');
+      a.style.width = '100%';
+      return [
+        { dur: 1500, draw(p) { vs.forEach((el, i) => K.count(el, EVAL[i].v, K.seg(p, i * 0.08, 0.7 + i * 0.08), EVAL[i].d)); } },
+        {
+          dur: 1800,
+          draw(p) {
+            const t = K.ease.io(K.seg(p, 0.25, 1));
+            b.style.width = K.lerp(100, (821 / 1368) * 100, t) + '%';
+            vb.textContent = 'R$ ' + K.fmt(Math.round(K.lerp(1368, 821, t)), 0);
+          },
+        },
+        { dur: 600, draw() {} },
+      ];
+    },
+  });
 })();
 </script>
 <script>
-/* slides-d.js — próximos passos e encerramento (slide 8). */
+/* slides-d.js — próximos passos e encerramento (slide 10). */
 (function () {
   'use strict';
   const K = window.K, S = window.SLIDES;
