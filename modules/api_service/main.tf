@@ -48,6 +48,11 @@ resource "random_password" "jwt" {
   special = false
 }
 
+# AES-256 key for the users' two-factor secrets; kept apart from the JWT key so each can change on its own.
+resource "random_bytes" "totp_key" {
+  length = 32
+}
+
 resource "random_password" "db" {
   length  = 40
   special = false
@@ -64,9 +69,10 @@ resource "aws_secretsmanager_secret" "app" {
 resource "aws_secretsmanager_secret_version" "app" {
   secret_id = aws_secretsmanager_secret.app.id
   secret_string = jsonencode({
-    jwt_secret   = random_password.jwt.result
-    db_password  = random_password.db.result
-    database_url = "postgresql+psycopg://${local.db_user}:${random_password.db.result}@${var.database_address}:${var.database_port}/${local.db_name}?sslmode=require"
+    jwt_secret          = random_password.jwt.result
+    totp_encryption_key = random_bytes.totp_key.base64
+    db_password         = random_password.db.result
+    database_url        = "postgresql+psycopg://${local.db_user}:${random_password.db.result}@${var.database_address}:${var.database_port}/${local.db_name}?sslmode=require"
   })
 }
 
@@ -287,6 +293,7 @@ resource "aws_ecs_task_definition" "api" {
       ]
       secrets = [
         { name = "JWT_SECRET", valueFrom = "${aws_secretsmanager_secret.app.arn}:jwt_secret::" },
+        { name = "TOTP_ENCRYPTION_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:totp_encryption_key::" },
         { name = "DATABASE_URL", valueFrom = "${aws_secretsmanager_secret.app.arn}:database_url::" },
       ]
       logConfiguration = {

@@ -5,7 +5,7 @@ matter (STRIDE), and how each one is mitigated. Every mitigation points to where
 
 Scope: the web app, the API, the database, the Bedrock integration, and the CI/CD pipelines in the three
 repositories ([backend](https://github.com/victorkauan/silver-proposals-backend),
-[frontend](https://github.com/victorkauan/silver-proposals-frontend), and this one). Last reviewed: 2026-11-19.
+[frontend](https://github.com/victorkauan/silver-proposals-frontend), and this one). Last reviewed: 2026-11-20.
 
 ## System and trust boundaries
 
@@ -32,18 +32,20 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 | Asset | Where | Why it matters |
 |---|---|---|
 | User accounts (name, e-mail, password hash) | RDS `users` | Account takeover, personal data (LGPD) |
+| Second factor (TOTP secret, recovery codes) | RDS `users` (AES-256-GCM ciphertext), `recovery_codes` (HMAC-SHA256) | Bypassing two-factor authentication |
 | Proposal content and briefings | RDS `proposals`, `proposal_versions` | Commercial secrets of the user's clients |
 | Sessions (access JWT, refresh tokens) | Browser memory / `httpOnly` cookie; RDS stores refresh token hashes | Impersonation |
 | Share tokens | Only in the link given to the user; RDS stores the SHA-256 hash | Read access to a proposal without an account |
-| Secrets (JWT key, database credentials) | AWS Secrets Manager | Full compromise of the API or database |
+| Secrets (JWT key, TOTP encryption key, database credentials) | AWS Secrets Manager | Full compromise of the API or database |
 | AWS account and pipelines | IAM, GitHub environments | Control of all of the above |
 
 ## Threats and mitigations
 
 | # | STRIDE | Threat | Mitigation | Where |
 |---|---|---|---|---|
-| T1 | Spoofing | Password guessing or credential stuffing on login | Argon2id hashes; login limited to 5/min and sign-up to 3/min per IP; same error for unknown e-mail and wrong password | backend `features/auth` |
-| T2 | Spoofing | Stolen session | Access token lives 15 min in memory only; refresh token in a `Secure`, `httpOnly`, `SameSite=Strict` cookie, rotated on every use; reusing a rotated token revokes the whole session family | backend `features/auth/service.py` |
+| T1 | Spoofing | Password guessing, credential stuffing, or a leaked password | Argon2id hashes; login limited to 5/min and sign-up to 3/min per IP; same error for unknown e-mail and wrong password; optional TOTP two-factor authentication (RFC 6238) with single-use recovery codes, codes never accepted twice, attempts limited per IP (5/min) and per account (10 per 15 min) | backend `features/auth`, `features/security` |
+| T2 | Spoofing | Stolen session | Access token lives 15 min in memory only; refresh token in a `Secure`, `httpOnly`, `SameSite=Strict` cookie, rotated on every use; reusing a rotated token revokes the whole session family; the user can list sessions and end one or all others, effective on the next request (the access token carries the session ID, checked on every request); a password change ends every other session | backend `features/auth`, `features/security` |
+| T15 | Information disclosure | Database dump or backup reveals second factors | TOTP secrets encrypted with AES-256-GCM (key in Secrets Manager, user ID as associated data); recovery codes stored only as keyed hashes | backend `features/auth/two_factor.py`, `modules/api_service` |
 | T3 | Elevation of privilege | User reads or edits another user's proposal (IDOR) | Every proposal route checks membership and role (owner, editor, viewer); non-members get `404`, so IDs reveal nothing | backend `features/proposals/service.py` |
 | T4 | Information disclosure | Guessing or leaking share links | 32 random bytes per token; only the hash is stored; links expire (1–90 days) and can be revoked; public reads limited to 60/min; one `404` for every invalid link; tokens kept out of logs (route template, no access log) and out of traces (redacted span URLs) | backend `features/sharing`, `shared/observability.py` |
 | T5 | Tampering | SQL injection | SQLAlchemy with bound parameters only; Semgrep (`p/python`, `p/fastapi`) and Bandit in CI | backend CI `security` |
@@ -63,9 +65,10 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 |---|---|---|
 | No WAF on CloudFront or the ALB | Cost; per-route rate limits cover the abuse cases we know | AWS WAF with managed rules and a rate-based rule |
 | Rate limits live in each task's memory | Each environment runs one task | A shared store (for example ElastiCache) when scaling out |
-| No multi-factor authentication for app users | Planned next (SIL-239) | TOTP or passkeys |
+| Two-factor authentication is optional, and TOTP can be phished | Users choose it; passkeys need more work | Passkeys (WebAuthn); require 2FA for some accounts |
+| Losing the TOTP encryption key disables every enabled 2FA | Terraform keeps the key in Secrets Manager and never rotates it | Key versioning with re-encryption |
 | The ECS execution role can read the RDS master secret | The database-setup task shares it with the API service | A separate execution role for the setup task |
-| The JWT key and database password are in the Terraform state | Generated by Terraform | The state bucket is encrypted and readable only by the operator and the CI roles; move generation to Secrets Manager rotation |
+| The JWT key, TOTP encryption key, and database password are in the Terraform state | Generated by Terraform | The state bucket is encrypted and readable only by the operator and the CI roles; move generation to Secrets Manager rotation |
 | 4 moderate `npm audit` findings (`minimatch` ReDoS through the `shadcn` CLI), dev dependencies only | `shadcn` is now a dev dependency, so production dependencies have no findings; the CLI runs only on a developer's machine | Update when `ts-morph` supports `minimatch` 11 |
 | RDS backups kept 1 day | AWS Free plan limit | 7 or more days on a paid plan |
 | Bedrock may keep prompts for abuse detection, depending on the model | AWS default for the model; nothing is shared with the provider | Set the account's data retention mode to `none` where the model allows it |
