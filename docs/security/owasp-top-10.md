@@ -1,6 +1,6 @@
 # OWASP Top 10:2025
 
-How Silver Proposals v1 addresses each category of the [OWASP Top 10:2025](https://top10.owasp.org/2025), comparing
+How Silver Proposals addresses each category of the [OWASP Top 10:2025](https://top10.owasp.org/2025), comparing
 **before the pipeline** (what could reach production with only manual review) with **after the pipeline** (the
 design controls plus the automated checks that now run on every pull request). Last reviewed: 2026-11-19.
 
