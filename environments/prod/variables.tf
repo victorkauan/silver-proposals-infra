@@ -16,9 +16,3 @@ variable "initialize_app_secret" {
   type        = bool
   default     = false
 }
-
-variable "enforce_waf" {
-  description = "Switch the edge ACL from Count to Block after reviewing the metrics."
-  type        = bool
-  default     = false
-}

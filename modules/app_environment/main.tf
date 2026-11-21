@@ -24,7 +24,6 @@ module "frontend" {
   host_name          = local.app_host_name
   bucket_name        = "silversoft-silver-proposals-app-${var.environment}"
   certificate_arn    = module.app_certificate.certificate_arn
-  enforce_waf        = var.enforce_waf
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 
   environment              = var.environment

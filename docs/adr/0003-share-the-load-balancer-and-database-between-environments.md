@@ -75,3 +75,9 @@ Isolation between the environments still holds where it matters:
 The budget alert was raised from USD 40 to USD 100. At USD 40 it fired every month by design, because the
 expected cost of this decision is about USD 66 plus observability; an alert that always fires stops being read.
 At USD 100 it fires only on a real overrun. The decision itself is unchanged.
+
+## Update (2026-11-21)
+
+The budget alert was raised from USD 100 to USD 115 after the WAF was added to the API load balancer (USD 8/month).
+The WAF ACLs on the two CloudFront distributions were removed: they protected static files only and would have added
+USD 16/month, which left the 80% alert below the normal spend. The decision itself is unchanged.

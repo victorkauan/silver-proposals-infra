@@ -54,7 +54,7 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 | T8 | Information disclosure | Leaked secrets in code or images | No secrets in git (gitleaks over the full history in every repo); runtime secrets come from Secrets Manager; new secret initialization uses write-only Terraform fields; Bedrock is called with the task role, so there are no AI keys; CI uses OIDC, so there are no static AWS keys | all CI, `modules/api_service` |
 | T9 | Tampering | Supply chain: malicious or vulnerable dependency | Lockfiles; new versions at least 14 days old; pip-audit, npm audit (fails on high), Trivy on the image (fails on high); actions pinned by SHA; ECR tags immutable with scan on push | all CI, `modules/ecr` |
 | T10 | Elevation of privilege | Compromised CI job takes over the AWS account | OIDC roles trust one repository and one environment each; a permissions boundary caps every workload role; `prod` and `shared` need an approval in GitHub | `bootstrap/github-oidc.tf`, `.github/workflows/deploy.yml` |
-| T11 | Denial of service | Cost or capacity abuse of AI generation | Generation limited to 10/min per IP and 4096 output tokens; USD 100 budget alert (80% and 100% actual, 100% forecast); CloudWatch alarms on failures, latency, CPU, and memory | backend `features/generation`, `environments/shared`, `modules/monitoring` |
+| T11 | Denial of service | Cost or capacity abuse of AI generation | Generation limited to 10/min per IP and 4096 output tokens; USD 115 budget alert (80% and 100% actual, 100% forecast); CloudWatch alarms on failures, latency, CPU, and memory | backend `features/generation`, `environments/shared`, `modules/monitoring` |
 | T12 | Repudiation | No trace of who changed what | Every version records its author; JSON request logs with request ID; CloudTrail event history for AWS changes | backend `features/versions`, `modules/monitoring` |
 | T13 | Information disclosure | Prompt data sent to a third party | Bedrock runs inside AWS: prompts are not shared with the model provider or used to train models, and the `us.` inference profile keeps processing in US Regions | [Data processing record](data-processing.md) |
 | T14 | Tampering | Infrastructure misconfiguration | Checkov and Trivy (IaC) in CI; plans posted on every pull request; applies only through the pipeline | CI `security`, `plan` |
@@ -63,6 +63,7 @@ repositories ([backend](https://github.com/victorkauan/silver-proposals-backend)
 
 | Risk | Why accepted now | What would fix it |
 |---|---|---|
+| No e-mail verification at sign-up and no password reset by e-mail | Sending needs Amazon SES production access, planned with the AWS account migration | E-mail verification before the first sign-in and single-use reset links (planned) |
 | Rate limits live in each task's memory | Each environment runs one task | A shared store (for example ElastiCache) when scaling out |
 | Two-factor authentication is optional, and TOTP can be phished | Users choose it; passkeys need more work | Passkeys (WebAuthn); require 2FA for some accounts |
 | Losing the TOTP encryption key disables every enabled 2FA | Secrets Manager retains the key across task and state changes | Key versioning with re-encryption |
