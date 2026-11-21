@@ -1,7 +1,7 @@
 variable "monthly_budget_usd" {
   description = "Monthly cost limit of the account in USD (overrun alert, set above the expected cost)."
   type        = number
-  default     = 100
+  default     = 115
 }
 
 variable "budget_alert_emails" {

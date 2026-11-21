@@ -9,7 +9,7 @@ flowchart LR
   user[Browser]
   cf[Cloudflare DNS<br/>DNS only]
   subgraph envs[Per environment: staging and prod]
-    cdn[CloudFront + WAF<br/>app / app-staging]
+    cdn[CloudFront<br/>app / app-staging]
     s3[(S3 build bucket)]
     svc[ECS Fargate service<br/>API task, public IP]
     sec[Secrets Manager<br/>JWT secret, TOTP key, database URL]
@@ -105,6 +105,9 @@ ACM validation records are created in Cloudflare by Terraform. All records are D
 ## Costs and budget
 
 About USD 66/month for both environments with the API running (see ADR-0003), plus about USD 5/month of
-observability. The AWS Budget is an overrun alert, not the expected cost: it fires at 80% (USD 80) and 100%
-(USD 100) of actual cost and at 100% of the forecast, so it stays silent in normal operation and warns when the
-spend grows about 13% or more above the estimate (for example, abuse of AI generation or a resource left running).
+observability and USD 8/month for the WAF on the API load balancer (USD 5 per ACL and USD 1 per rule, three rules),
+about USD 79/month in total. The CloudFront distributions have no WAF: they serve only static files, and two more
+ACLs would cost USD 16/month. The AWS Budget is an overrun alert, not the expected cost: it fires at 80% (USD 92)
+and 100% (USD 115) of actual cost and at 100% of the forecast, so it stays silent in normal operation and warns when
+the spend grows about 16% or more above the estimate (for example, abuse of AI generation or a resource left
+running).

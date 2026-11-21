@@ -4,6 +4,7 @@
   const K = window.K, S = window.SLIDES;
 
   const NEXT = [
+    ['Verificação de e-mail', 'confirmação no cadastro e nova senha por e-mail'],
     ['Chat sobre a proposta', 'perguntas e ajustes em linguagem natural'],
     ['Slides gerados', 'a proposta vira apresentação para o cliente'],
     ['Convites com papéis', 'editores e leitores por proposta'],
