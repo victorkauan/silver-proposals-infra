@@ -80,17 +80,6 @@ data "aws_cloudfront_response_headers_policy" "security" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
-# Kept detached for one apply: deleting it in the same apply as the detach fails while
-# CloudFront still references it. Remove this module in the next change.
-module "waf" {
-  source = "../web_acl"
-
-  name          = "silver-proposals-${var.environment}-edge"
-  scope         = "CLOUDFRONT"
-  request_limit = 1500
-  enforce       = true
-}
-
 #trivy:ignore:AWS-0011 Static files only; the WAF protects the API load balancer, and CloudFront has Shield Standard.
 resource "aws_cloudfront_distribution" "site" {
   #checkov:skip=CKV_AWS_86:Access logging is covered by the observability work.
