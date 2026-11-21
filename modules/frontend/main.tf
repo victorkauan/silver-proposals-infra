@@ -80,6 +80,7 @@ data "aws_cloudfront_response_headers_policy" "security" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
+#trivy:ignore:AWS-0011 Static files only; the WAF protects the API load balancer, and CloudFront has Shield Standard.
 resource "aws_cloudfront_distribution" "site" {
   #checkov:skip=CKV_AWS_86:Access logging is covered by the observability work.
   #checkov:skip=CKV_AWS_310:A single S3 origin; failover is not needed for a static site.
