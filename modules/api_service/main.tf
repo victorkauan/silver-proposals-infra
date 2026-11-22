@@ -13,11 +13,12 @@ locals {
   db_name    = "silver_proposals_${var.environment}"
   db_user    = "silver_app_${var.environment}"
 
+  bedrock_region = coalesce(var.bedrock_region, var.region)
   bedrock_model_arns = [
     for region in var.bedrock_model_regions :
     "arn:${local.partition}:bedrock:${region}::foundation-model/${var.bedrock_foundation_model_id}"
   ]
-  bedrock_profile_arn = "arn:${local.partition}:bedrock:${var.region}:${local.account_id}:inference-profile/${var.bedrock_model_id}"
+  bedrock_profile_arn = "arn:${local.partition}:bedrock:${local.bedrock_region}:${local.account_id}:inference-profile/${var.bedrock_model_id}"
 
   # Client IPs are personal data (LGPD) and not needed for troubleshooting: drop them before export.
   client_ip_attributes = [
@@ -355,7 +356,7 @@ resource "aws_ecs_task_definition" "api" {
         { name = "CORS_ORIGINS", value = jsonencode(var.cors_origins) },
         { name = "AI_PROVIDER", value = "bedrock" },
         { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
-        { name = "BEDROCK_REGION", value = var.region },
+        { name = "BEDROCK_REGION", value = local.bedrock_region },
         { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://127.0.0.1:4318" },
         { name = "OTEL_SERVICE_NAME", value = "silver-proposals-api-${var.environment}" },
       ]

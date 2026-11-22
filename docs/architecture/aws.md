@@ -62,6 +62,8 @@ flowchart LR
   generation is not cut off.
 - Configuration: `ENVIRONMENT`, `CORS_ORIGINS` (the environment's app URL), `AI_PROVIDER=bedrock`,
   `BEDROCK_MODEL_ID`, `BEDROCK_REGION`; secrets `JWT_SECRET`, `TOTP_ENCRYPTION_KEY`, and `DATABASE_URL` from Secrets Manager.
+- **Bedrock in us-east-1:** the account's Nova quotas are zero in us-east-2, so the API calls the us-east-1 runtime
+  endpoint (`BEDROCK_REGION`, [ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)).
 - **Bedrock without keys:** the task role may call `InvokeModel` and `InvokeModelWithResponseStream` on the
   inference profile `us.amazon.nova-2-lite-v1:0`, and on the Nova 2 Lite foundation model in the three regions the
   profile routes to (us-east-1, us-east-2, us-west-2), only when the call comes through that profile.

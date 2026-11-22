@@ -38,10 +38,11 @@ module "frontend" {
 module "api" {
   source = "../api_service"
 
-  environment   = var.environment
-  region        = var.region
-  api_host_name = local.api_host_name
-  cors_origins  = ["https://${local.app_host_name}"]
+  environment    = var.environment
+  region         = var.region
+  bedrock_region = var.bedrock_region
+  api_host_name  = local.api_host_name
+  cors_origins   = ["https://${local.app_host_name}"]
 
   vpc_id                 = var.shared.vpc_id
   subnet_ids             = var.shared.public_subnet_ids

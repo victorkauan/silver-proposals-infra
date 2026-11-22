@@ -40,8 +40,8 @@ module "environment" {
   image_tag              = var.image_tag
   desired_count          = var.desired_count
   initialize_app_secret  = var.initialize_app_secret
-  # The suspended account's distribution still holds the name; associate-alias moves it, then this goes back to true.
-  attach_app_host_name = false
+  # The account's Nova quotas are zero in us-east-2 and normal in us-east-1, where its AWS-managed policy allows Bedrock.
+  bedrock_region = "us-east-1"
 
   shared = {
     for key in [

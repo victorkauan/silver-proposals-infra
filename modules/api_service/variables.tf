@@ -125,6 +125,12 @@ variable "bedrock_model_id" {
   default     = "us.amazon.nova-2-lite-v1:0"
 }
 
+variable "bedrock_region" {
+  description = "Region of the Bedrock runtime endpoint the API calls; null uses the API's region."
+  type        = string
+  default     = null
+}
+
 variable "bedrock_foundation_model_id" {
   description = "Foundation model behind the inference profile."
   type        = string

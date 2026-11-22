@@ -16,12 +16,16 @@ AWS manages service control policies (SCPs) on project accounts. The project acc
 - Every service the project uses is allowed in the project's region, **us-east-2**.
 - Console passwords for IAM users are denied. People sign in with `aws login` through the AWS-managed role
   `managed/AccountFullAccessRole`, which issues temporary credentials.
-- The Nova 2 Lite US inference profile (`us.amazon.nova-2-lite-v1:0`) is active in us-east-2.
+- The Nova 2 Lite US inference profile (`us.amazon.nova-2-lite-v1:0`) is active in us-east-2, but every Nova quota
+  (requests and tokens per minute, tokens per day) is 0 there, so calls fail with `ThrottlingException`. In us-east-1
+  the same quotas are normal (2,000 requests and 8 million tokens per minute).
 
 ## Decision
 
 - Run every regional resource in **us-east-2**. The only exception is the CloudFront certificates, which
   CloudFront requires in us-east-1 (ACM is allowed there). The certificate module takes a per-resource `region`.
+- The API calls Bedrock in **us-east-1** (`bedrock_region`), through the same US inference profile. Only the
+  Bedrock runtime endpoint changes region; the prompts already crossed US regions through the profile.
 - The operators are the role `managed/AccountFullAccessRole`, not an IAM user. The state, backup, and ALB log
   bucket policies name this role. There are still no access keys anywhere.
 - Rename the buckets whose global names still belong to the suspended account: the state bucket becomes
