@@ -85,3 +85,9 @@ variable "attach_app_host_name" {
   type        = bool
   default     = true
 }
+
+variable "bedrock_region" {
+  description = "Region of the Bedrock runtime endpoint the API calls; null uses the environment's region."
+  type        = string
+  default     = null
+}
