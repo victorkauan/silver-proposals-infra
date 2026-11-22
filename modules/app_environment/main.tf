@@ -40,6 +40,7 @@ module "api" {
 
   environment    = var.environment
   region         = var.region
+  ai_provider    = var.ai_provider
   bedrock_region = var.bedrock_region
   api_host_name  = local.api_host_name
   cors_origins   = ["https://${local.app_host_name}"]

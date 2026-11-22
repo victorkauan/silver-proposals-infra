@@ -57,6 +57,15 @@ first image and sets `image_tag` and `desired_count`.
   ([outputs contract](../reference/outputs-contract.md)).
 - ACM certificates are validated through the Cloudflare records in a few minutes; the apply waits for them.
 - The budget sends a confirmation e-mail only when an alert fires; there is nothing to confirm in advance.
+- With `ai_provider = "deepinfra"`, the first apply creates an empty secret `silver-proposals-<environment>/deepinfra`.
+  Set the key before the backend deploys the new task definition, or the task cannot start:
+
+  ```bash
+  aws secretsmanager put-secret-value --region us-east-2 \
+    --secret-id silver-proposals-staging/deepinfra --secret-string "$(tr -d '[:space:]' < deepinfra.key)"
+  ```
+
+  Replace a leaked key the same way, then run the backend deploy again so new tasks read it.
 
 ## AWS Free plan
 

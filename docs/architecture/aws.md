@@ -24,6 +24,7 @@ flowchart LR
     logs[(Private S3 access logs)]
   end
   bedrock[Amazon Bedrock<br/>Nova 2 Lite]
+  deepinfra[DeepInfra<br/>GLM-5.3 Flash]
 
   user -- DNS --> cf
   user -- HTTPS --> cdn --> s3
@@ -33,6 +34,7 @@ flowchart LR
   dump --> backups
   alb -. staged log delivery .-> logs
   svc -- task role, no keys --> bedrock
+  svc -- API key, while the Nova quotas are zero --> deepinfra
   svc --> sec
   ecr -. image .-> svc
 ```
@@ -60,8 +62,11 @@ flowchart LR
   This is safe because only the ALB can reach the tasks.
 - The ALB checks `/ready` (database included) and keeps idle connections for 300 seconds, so streamed
   generation is not cut off.
-- Configuration: `ENVIRONMENT`, `CORS_ORIGINS` (the environment's app URL), `AI_PROVIDER=bedrock`,
-  `BEDROCK_MODEL_ID`, `BEDROCK_REGION`; secrets `JWT_SECRET`, `TOTP_ENCRYPTION_KEY`, and `DATABASE_URL` from Secrets Manager.
+- Configuration: `ENVIRONMENT`, `CORS_ORIGINS` (the environment's app URL), `AI_PROVIDER` (`ai_provider`),
+  `BEDROCK_MODEL_ID`, `BEDROCK_REGION`, and `DEEPINFRA_MODEL_ID` with DeepInfra; secrets `JWT_SECRET`,
+  `TOTP_ENCRYPTION_KEY`, and `DATABASE_URL` from Secrets Manager, plus `DEEPINFRA_API_KEY` from its own secret.
+- **DeepInfra for now:** every Nova quota in the account is zero, tokens per day included, so staging and production
+  generate with DeepInfra (`ai_provider = "deepinfra"`, [ADR-0006](../adr/0006-use-deepinfra-while-bedrock-quotas-are-zero.md)).
 - **Bedrock in us-east-1:** the account's Nova quotas are zero in us-east-2, so the API calls the us-east-1 runtime
   endpoint (`BEDROCK_REGION`, [ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)).
 - **Bedrock without keys:** the task role may call `InvokeModel` and `InvokeModelWithResponseStream` on the

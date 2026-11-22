@@ -42,6 +42,8 @@ module "environment" {
   initialize_app_secret  = var.initialize_app_secret
   # The account's Nova quotas are zero in us-east-2 and normal in us-east-1, where its AWS-managed policy allows Bedrock.
   bedrock_region = "us-east-1"
+  # Every Nova quota, tokens per day included, is zero in this account until AWS raises it (ADR-0006).
+  ai_provider = "deepinfra"
 
   shared = {
     for key in [

@@ -101,7 +101,17 @@ resource "aws_secretsmanager_secret" "app" {
   #checkov:skip=CKV_AWS_149:The AWS-managed key (aws/secretsmanager) is enough; a customer-managed KMS key adds cost.
   #checkov:skip=CKV2_AWS_57:Rotation needs a Lambda; application credential rotation is an explicit operation.
   name                    = "${local.name}/app"
-  description             = "Application secrets of the ${var.environment} API (no AI keys: Bedrock uses the task role)"
+  description             = "Application secrets of the ${var.environment} API"
+  recovery_window_in_days = 7
+}
+
+# The key's value is set by hand (docs/runbooks/apply-environments.md), so it never passes through Terraform or CI.
+resource "aws_secretsmanager_secret" "deepinfra" {
+  #checkov:skip=CKV_AWS_149:The AWS-managed key (aws/secretsmanager) is enough; a customer-managed KMS key adds cost.
+  #checkov:skip=CKV2_AWS_57:A third-party API key cannot be rotated by AWS; it is replaced by hand.
+  count                   = var.ai_provider == "deepinfra" ? 1 : 0
+  name                    = "${local.name}/deepinfra"
+  description             = "DeepInfra API key of the ${var.environment} API"
   recovery_window_in_days = 7
 }
 
@@ -164,7 +174,7 @@ data "aws_iam_policy_document" "execution_secrets" {
   statement {
     sid       = "ReadEnvironmentSecrets"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_secretsmanager_secret.app.arn]
+    resources = concat([aws_secretsmanager_secret.app.arn], aws_secretsmanager_secret.deepinfra[*].arn)
   }
 }
 
@@ -351,20 +361,22 @@ resource "aws_ecs_task_definition" "api" {
       }
       readonlyRootFilesystem = true
       portMappings           = [{ containerPort = var.container_port, protocol = "tcp" }]
-      environment = [
+      environment = concat([
         { name = "ENVIRONMENT", value = var.environment },
         { name = "CORS_ORIGINS", value = jsonencode(var.cors_origins) },
-        { name = "AI_PROVIDER", value = "bedrock" },
+        { name = "AI_PROVIDER", value = var.ai_provider },
         { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
         { name = "BEDROCK_REGION", value = local.bedrock_region },
         { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://127.0.0.1:4318" },
         { name = "OTEL_SERVICE_NAME", value = "silver-proposals-api-${var.environment}" },
-      ]
-      secrets = [
+        ], var.ai_provider == "deepinfra" ? [
+        { name = "DEEPINFRA_MODEL_ID", value = var.deepinfra_model_id },
+      ] : [])
+      secrets = concat([
         { name = "JWT_SECRET", valueFrom = "${aws_secretsmanager_secret.app.arn}:jwt_secret::" },
         { name = "TOTP_ENCRYPTION_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:totp_encryption_key::" },
         { name = "DATABASE_URL", valueFrom = "${aws_secretsmanager_secret.app.arn}:database_url::" },
-      ]
+      ], [for arn in aws_secretsmanager_secret.deepinfra[*].arn : { name = "DEEPINFRA_API_KEY", valueFrom = arn }])
       logConfiguration = {
         logDriver = "awslogs"
         options = {

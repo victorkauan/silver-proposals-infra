@@ -86,6 +86,12 @@ variable "attach_app_host_name" {
   default     = true
 }
 
+variable "ai_provider" {
+  description = "AI provider of the API: bedrock, or deepinfra while the Bedrock quotas are zero."
+  type        = string
+  default     = "bedrock"
+}
+
 variable "bedrock_region" {
   description = "Region of the Bedrock runtime endpoint the API calls; null uses the environment's region."
   type        = string

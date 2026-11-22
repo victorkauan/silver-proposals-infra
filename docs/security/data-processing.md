@@ -10,7 +10,8 @@ LGPD (Lei 13.709/2018) for a commercial launch. This is an engineering record, n
 - **Proposal content** (briefings and generated text) can contain personal data of the user's own clients, such as
   contact names. For that data, the user's company is the controller and Silver Proposals acts as the **operator**
   (processor), processing it only to generate and store the proposal.
-- **Sub-processors:** Amazon Web Services (hosting, database, logs, traces, and Amazon Bedrock for generation).
+- **Sub-processors:** Amazon Web Services (hosting, database, logs, traces, and Amazon Bedrock for generation) and,
+  while the Bedrock quotas are zero, DeepInfra for generation ([ADR-0006](../adr/0006-use-deepinfra-while-bedrock-quotas-are-zero.md)).
   Cloudflare provides DNS only and does not receive application traffic. GitHub hosts code and CI and receives
   no user data.
 
@@ -22,7 +23,7 @@ LGPD (Lei 13.709/2018) for a commercial launch. This is an engineering record, n
 | Sessions | Refresh token SHA-256 hash, session family and start, browser (`User-Agent`, up to 255 characters), expiry, use and revocation times | Keeping the user signed in; detecting stolen tokens; letting the user see and end sessions | Contract (V); legitimate interest in security (IX) | RDS `refresh_tokens` | 7 days of validity; expired rows are deleted by the API every 6 hours |
 | Two-factor authentication | TOTP secret (AES-256-GCM), last accepted code step, recovery code hashes (HMAC-SHA256), enable time | Protecting the account against a leaked password | Contract (V); legitimate interest in security (IX) | RDS `users`, `recovery_codes` | Until the user turns 2FA off or deletes the account |
 | Proposals | Title, client name, briefing, content, versions with author and time | The service itself | Contract (V) | RDS `proposals`, `proposal_versions` | Until the owner deletes the proposal; deletion removes versions, members, and share links (cascade) |
-| Generation | Briefing and instructions sent as the prompt; generated text | Writing the proposal draft | Contract (V) | Amazon Bedrock, US inference profile (us-east-1, us-east-2, us-west-2) | Not shared with the model provider and not used to train models; AWS may keep it for abuse detection depending on the model |
+| Generation | Briefing and instructions sent as the prompt; generated text | Writing the proposal draft | Contract (V) | DeepInfra (United States) while `ai_provider = "deepinfra"`; otherwise Amazon Bedrock, US inference profile (us-east-1, us-east-2, us-west-2) | DeepInfra: kept in memory only during the request, not logged, not used for training. Bedrock: not shared with the model provider and not used to train models; AWS may keep it for abuse detection depending on the model |
 | Share links | Token SHA-256 hash, expiry, creator, revocation time | Read-only access for the user's client | Contract (V) | RDS `share_links` | Link valid 1–90 days; the row stays until the proposal is deleted |
 | Application logs | Request ID, method, route template, status, duration, trace ID, event names, error codes | Operation, troubleshooting, security | Legitimate interest (IX) | CloudWatch Logs, us-east-2 | 14 days |
 | Traces | Request URL (share tokens redacted), method, status, user agent, timings, SQL statements without values; client IP attributes are deleted by the collector before export | Performance and troubleshooting | Legitimate interest (IX) | AWS X-Ray, us-east-2 | 30 days (X-Ray fixed retention) |
@@ -39,7 +40,8 @@ The application logs route templates. The load balancer records raw request URLs
   private and accepts only the API's security group; one database user per environment.
 - **Credentials:** Argon2id for passwords; optional TOTP two-factor authentication with encrypted secrets and hashed
   recovery codes; sessions the user can list and end; short-lived JWTs; rotating refresh tokens in `httpOnly` cookies; opaque,
-  hashed share tokens; runtime secrets in AWS Secrets Manager; Bedrock through an IAM role, with no API keys.
+  hashed share tokens; runtime secrets in AWS Secrets Manager; Bedrock through an IAM role, with no API keys; the DeepInfra key in its
+  own secret, set by hand.
 - **Least privilege in the cloud:** CI uses GitHub OIDC with one role per environment under a permissions boundary;
   production changes need an approval.
 - **Monitoring:** JSON logs, traces, dashboards, and alarms by e-mail. See [Monitoring](../reference/monitoring.md).

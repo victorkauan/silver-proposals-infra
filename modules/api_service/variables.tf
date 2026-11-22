@@ -125,6 +125,23 @@ variable "bedrock_model_id" {
   default     = "us.amazon.nova-2-lite-v1:0"
 }
 
+variable "ai_provider" {
+  description = "AI provider of the API (AI_PROVIDER): bedrock, or deepinfra while the Bedrock quotas are zero."
+  type        = string
+  default     = "bedrock"
+
+  validation {
+    condition     = contains(["bedrock", "deepinfra"], var.ai_provider)
+    error_message = "ai_provider must be bedrock or deepinfra."
+  }
+}
+
+variable "deepinfra_model_id" {
+  description = "DeepInfra model used when ai_provider is deepinfra (DEEPINFRA_MODEL_ID)."
+  type        = string
+  default     = "zai-org/GLM-5.3-Flash"
+}
+
 variable "bedrock_region" {
   description = "Region of the Bedrock runtime endpoint the API calls; null uses the API's region."
   type        = string
