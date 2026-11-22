@@ -79,3 +79,9 @@ variable "initialize_app_secret" {
   type        = bool
   default     = false
 }
+
+variable "attach_app_host_name" {
+  description = "Attach the app host name to its CloudFront distribution (see the frontend module)."
+  type        = bool
+  default     = true
+}

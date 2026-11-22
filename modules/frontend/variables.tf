@@ -43,3 +43,9 @@ variable "github_subject_prefix" {
     error_message = "github_subject_prefix must be repo:<owner>/<repository> (optionally with @ids), without wildcards."
   }
 }
+
+variable "attach_host_name" {
+  description = "Attach the host name to the distribution. False creates it without the alias and publishes the TXT record that lets associate-alias move the name from another account."
+  type        = bool
+  default     = true
+}
