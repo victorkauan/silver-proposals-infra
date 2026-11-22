@@ -91,6 +91,18 @@ No account ID is hard-coded, so the code moves as is. In order:
    repositories (`scripts/publish-outputs.sh`) and run their deploys.
 6. Confirm the SNS alert subscription e-mail again.
 
+If the old account can no longer be changed, its DNS records and CloudFront aliases stay behind:
+
+- Delete the old `app`, `api`, `app-staging`, and `api-staging` CNAME records in Cloudflare first (Cloudflare error
+  81053: a record with that host already exists).
+- CloudFront aliases are global, so the old distributions keep the app host names (`CNAMEAlreadyExists`). Apply with
+  `attach_app_host_name = false` (the distribution is created with its certificate but no alias, plus a
+  `_<host>` TXT record pointing to it), move each name, then set it back to `true` and apply again:
+
+  ```bash
+  aws cloudfront associate-alias --target-distribution-id <new id> --alias app-staging.silversoft.com.br
+  ```
+
 ## Troubleshooting
 
 | Symptom | What to do |

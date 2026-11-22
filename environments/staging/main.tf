@@ -40,6 +40,8 @@ module "environment" {
   image_tag              = var.image_tag
   desired_count          = var.desired_count
   initialize_app_secret  = var.initialize_app_secret
+  # The suspended account's distribution still holds the name; associate-alias moves it, then this goes back to true.
+  attach_app_host_name = false
 
   shared = {
     for key in [

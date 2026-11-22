@@ -91,7 +91,7 @@ resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = var.host_name
-  aliases             = [var.host_name]
+  aliases             = var.attach_host_name ? [var.host_name] : []
   default_root_object = "index.html"
   price_class         = "PriceClass_100"
   http_version        = "http2and3"
@@ -189,6 +189,20 @@ resource "cloudflare_dns_record" "site" {
   ttl     = 300
   proxied = false
   comment = "Frontend (managed by Terraform)"
+}
+
+# Proves ownership of the host name so `aws cloudfront associate-alias` can move it from a distribution in another
+# account: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/alternate-domain-names-move.html
+resource "cloudflare_dns_record" "alias_move" {
+  count = var.attach_host_name ? 0 : 1
+
+  zone_id = var.cloudflare_zone_id
+  name    = "_${var.host_name}"
+  type    = "TXT"
+  content = "\"${aws_cloudfront_distribution.site.domain_name}\""
+  ttl     = 60
+  proxied = false
+  comment = "CloudFront alias move (managed by Terraform)"
 }
 
 # ---------------------------------------------------------------- deploy role (frontend pipeline)
