@@ -95,7 +95,8 @@ No account ID is hard-coded, so the code moves as is. In order:
 3. Run the [state bootstrap](terraform-state-bootstrap.md) locally, then update the infra repository variable
    `TERRAFORM_ROLE_ARN_PREFIX` with the new account's role ARN prefix.
 4. Set the infra variable `INITIALIZE_APP_SECRET=true` so the first staging and prod applies create the application
-   secrets, then set it back to `false` right after.
+   secrets, and keep it. The values are written only once (`secret_string_wo_version = 1`); setting it back to `false`
+   makes the plans try to destroy the secret version, which `prevent_destroy` refuses.
 5. Apply `shared`, `staging`, and `prod` through the pipeline, then publish the outputs to the backend and frontend
    repositories (`scripts/publish-outputs.sh`) and run their deploys.
 6. Confirm the SNS alert subscription e-mail again.
