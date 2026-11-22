@@ -1,6 +1,6 @@
 # Terraform state bootstrap
 
-The state bucket `silversoft-silver-proposals-tfstate` holds every Terraform state of the project. It is created once
+The state bucket `silversoft-silver-proposals-tfstate-v2` holds every Terraform state of the project. It is created once
 by the `bootstrap/` root module. Why it is designed this way: [ADR-0002](../adr/0002-terraform-state-in-s3-with-native-locking.md).
 
 | Key | Root module |
@@ -12,9 +12,11 @@ by the `bootstrap/` root module. Why it is designed this way: [ADR-0002](../adr/
 ## Prerequisites
 
 - Terraform `>= 1.10` and AWS CLI v2.
-- Signed in as an operator listed in `operator_user_names` (`aws login`, an IAM user with MFA and no access keys).
+- Signed in as an operator role listed in `operator_role_names` (`aws login`; the account forbids IAM users with console
+  passwords, so operators use the AWS-managed `managed/AccountFullAccessRole`, see
+  [ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)).
   Never run Terraform as the root user.
-- `aws sts get-caller-identity` shows the operator user.
+- `aws sts get-caller-identity` shows `assumed-role/AccountFullAccessRole`.
 
 ## First-time setup
 
@@ -74,7 +76,7 @@ state takes the lock first, so a second run fails with `Error acquiring the stat
 |---|---|
 | `Error acquiring the state lock` and no other run is active | A run was interrupted. Check the lock info (who, when), then `terraform force-unlock <ID>` from the same folder. |
 | `AccessDenied ... explicit deny in a resource-based policy` | You are not an allowed principal, or the request did not use TLS. Check `aws sts get-caller-identity`. |
-| A state was overwritten or deleted by mistake | Restore a previous version of the object (versions are kept for 90 days): `aws s3api list-object-versions --bucket silversoft-silver-proposals-tfstate --prefix <env>/`, then copy the version back. |
+| A state was overwritten or deleted by mistake | Restore a previous version of the object (versions are kept for 90 days): `aws s3api list-object-versions --bucket silversoft-silver-proposals-tfstate-v2 --prefix <env>/`, then copy the version back. |
 | The bucket policy locks everyone out | Sign in as the root user (MFA), fix or delete the bucket policy, then run `terraform apply` in `bootstrap/` to restore it. |
 
 ## Verification (2026-11-18)

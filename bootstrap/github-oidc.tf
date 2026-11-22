@@ -179,7 +179,7 @@ data "aws_iam_policy_document" "plan_secrets" {
   statement {
     sid       = "ReadEnvironmentAppSecrets"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:silver-proposals-${each.value.environment}/app-*"]
+    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:secret:silver-proposals-${each.value.environment}/app-*"]
   }
 }
 

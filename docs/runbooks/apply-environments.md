@@ -14,7 +14,7 @@ Changes to `shared` affect both environments, so they need the same care as prod
 
 ## Prerequisites
 
-- Signed in as an operator: `aws sts get-caller-identity` shows the operator user, never root.
+- Signed in as an operator: `aws sts get-caller-identity` shows `assumed-role/AccountFullAccessRole`, never root.
 - A **Cloudflare API token** scoped to DNS of `silversoft.com.br` only:
   Cloudflare dashboard → My Profile → API Tokens → Create Token → *Create Custom Token* with the permissions
   **Zone → DNS → Edit** and **Zone → Zone → Read**, and Zone Resources **Include → Specific zone →
@@ -66,10 +66,30 @@ The account runs on the AWS Free plan, which rejects some settings with `FreeTie
 |---|---|---|
 | RDS automated backup retention | 1 day (the module default is 7) | `environments/shared/main.tf` |
 
-On a Paid plan, remove the override to return to the defaults. Moving to another account needs, in order: an
-operator user with MFA and no access keys, Bedrock model access, the state bootstrap (the state bucket name is
-global, so pick a new one or delete the old bucket first), then `shared`, `staging`, and `prod`. No account ID is
-hard-coded, so the code moves as is.
+On a Paid plan, remove the override to return to the defaults.
+
+The account is a *project account* of the new AWS sign-up experience, so AWS-managed policies add these limits
+([ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)):
+
+| Limit | Consequence |
+|---|---|
+| Regional services only in us-east-2 (us-east-1 allows global services only) | Everything runs in us-east-2; CloudFront certificates stay in us-east-1 |
+| No console passwords for IAM users | Operators use `aws login` with the `managed/AccountFullAccessRole` role |
+| No CloudWatch alarms in us-east-1 | No alarm on the CloudFront metrics; the dashboard charts them |
+
+## Moving to another account
+
+No account ID is hard-coded, so the code moves as is. In order:
+
+1. Check the new account's limits (region, IAM users) before anything else, and sign in as the operator.
+2. Bucket names are global: if the old account still holds them, pick new names (state and frontend buckets).
+3. Run the [state bootstrap](terraform-state-bootstrap.md) locally, then update the infra repository variable
+   `TERRAFORM_ROLE_ARN_PREFIX` with the new account's role ARN prefix.
+4. Set the infra variable `INITIALIZE_APP_SECRET=true` so the first staging and prod applies create the application
+   secrets, then set it back to `false` right after.
+5. Apply `shared`, `staging`, and `prod` through the pipeline, then publish the outputs to the backend and frontend
+   repositories (`scripts/publish-outputs.sh`) and run their deploys.
+6. Confirm the SNS alert subscription e-mail again.
 
 ## Troubleshooting
 

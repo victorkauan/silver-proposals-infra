@@ -23,7 +23,7 @@ variable "flow_log_retention_days" {
 variable "availability_zones" {
   description = "Availability zones of the subnets, pinned so the layout never changes silently (two are required by the ALB and RDS)."
   type        = list(string)
-  default     = ["us-east-1a", "us-east-1b"]
+  default     = ["us-east-2a", "us-east-2b"]
 }
 
 variable "permissions_boundary_arn" {

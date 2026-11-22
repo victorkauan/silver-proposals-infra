@@ -22,7 +22,7 @@ so the only sensitive value a workflow needs is the role to assume, and a role A
 | `ecs_subnet_ids` | `ECS_SUBNETS` | Subnets of the one-off migrations task (comma-separated) |
 | `ecs_task_security_group_id` | `ECS_SECURITY_GROUP` | Security group of the migrations task |
 | `api_url` | `API_URL` | Smoke test after deploy |
-| — | `AWS_REGION` | Always `us-east-1` |
+| — | `AWS_REGION` | Always `us-east-2` |
 
 ## Frontend
 
@@ -33,7 +33,7 @@ so the only sensitive value a workflow needs is the role to assume, and a role A
 | `cloudfront_distribution_id` | `CLOUDFRONT_DISTRIBUTION_ID` | Cache invalidation after upload |
 | `api_url` | `VITE_API_BASE_URL` | API address embedded at build time |
 | `app_url` | `APP_URL` | Smoke test after deploy |
-| — | `AWS_REGION` | Always `us-east-1` |
+| — | `AWS_REGION` | Always `us-east-2` |
 
 ## Other outputs
 

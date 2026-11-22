@@ -1,6 +1,6 @@
 locals {
   name   = "silver-proposals"
-  region = "us-east-1"
+  region = "us-east-2"
   domain = "silversoft.com.br"
 
   # Created by bootstrap/; every role in this account's project carries it.

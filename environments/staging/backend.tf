@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket       = "silversoft-silver-proposals-tfstate"
+    bucket       = "silversoft-silver-proposals-tfstate-v2"
     key          = "staging/terraform.tfstate"
-    region       = "us-east-1"
+    region       = "us-east-2"
     encrypt      = true
     use_lockfile = true
   }

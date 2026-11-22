@@ -1,7 +1,7 @@
 # Silver Proposals — Infrastructure
 
 Infrastructure as code for **Silver Proposals**, an AI-powered SaaS for creating and managing commercial proposals.
-This repo defines the AWS resources (us-east-1) and Cloudflare DNS records that the application runs on,
+This repo defines the AWS resources (us-east-2) and Cloudflare DNS records that the application runs on,
 the infrastructure CI/CD, and the system-level documentation.
 
 | Repository | Responsibility |
@@ -32,7 +32,7 @@ Architecture: [AWS architecture](docs/architecture/aws.md). How to apply: [runbo
 
 ## Remote state
 
-All states live in the S3 bucket `silversoft-silver-proposals-tfstate` (us-east-1), one key per root module
+All states live in the S3 bucket `silversoft-silver-proposals-tfstate-v2` (us-east-2), one key per root module
 (`bootstrap/`, `staging/`, `prod/`), with versioning, encryption, TLS-only access, and **S3 native locking**
 (`use_lockfile`), so no DynamoDB table is needed. Only the operators and each environment's CI role can reach the
 bucket, and a CI role only its own environment's state. Design: [ADR-0002](docs/adr/0002-terraform-state-in-s3-with-native-locking.md).
@@ -41,13 +41,13 @@ How the bucket was created and how to recover it: [state bootstrap runbook](docs
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.10, < 2.0` (S3 native state locking)
-- AWS CLI v2, signed in with `aws login` as an operator (IAM user with MFA, no access keys, never root)
+- AWS CLI v2, signed in with `aws login` as an operator (the `managed/AccountFullAccessRole` role, temporary credentials, no access keys, never root)
 - [tflint](https://github.com/terraform-linters/tflint) (Git hooks)
 
 ## Quick start
 
 ```bash
-aws sts get-caller-identity   # must be your operator user
+aws sts get-caller-identity   # must be the operator role
 cd environments/staging
 terraform init                # connects to the remote state
 terraform plan

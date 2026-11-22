@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "backups" {
       variable = "aws:PrincipalArn"
       values = [
         "arn:${local.partition}:iam::${local.account_id}:root",
-        "arn:${local.partition}:iam::${local.account_id}:user/${var.archive_operator_name}",
+        "arn:${local.partition}:iam::${local.account_id}:role/${var.archive_operator_role_name}",
       ]
     }
   }

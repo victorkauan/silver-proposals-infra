@@ -16,13 +16,15 @@ module "app_certificate" {
 
   domain_names       = [local.app_host_name]
   cloudflare_zone_id = var.shared.cloudflare_zone_id
+  # CloudFront only accepts certificates from us-east-1.
+  region = "us-east-1"
 }
 
 module "frontend" {
   source = "../frontend"
 
   host_name          = local.app_host_name
-  bucket_name        = "silversoft-silver-proposals-app-${var.environment}"
+  bucket_name        = "silversoft-silver-proposals-app-${var.environment}-v2"
   certificate_arn    = module.app_certificate.certificate_arn
   cloudflare_zone_id = var.shared.cloudflare_zone_id
 
