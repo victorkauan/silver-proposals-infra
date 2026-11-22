@@ -53,8 +53,8 @@ variable "enable_access_logs" {
   default     = false
 }
 
-variable "archive_operator_name" {
-  description = "IAM operator allowed to read archived ALB logs."
+variable "archive_operator_role_name" {
+  description = "IAM role (with path) of the operator allowed to read archived ALB logs."
   type        = string
-  default     = "victor-admin"
+  default     = "managed/AccountFullAccessRole"
 }

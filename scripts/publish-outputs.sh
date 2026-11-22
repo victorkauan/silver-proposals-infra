@@ -32,7 +32,7 @@ set_vars() {
 }
 
 set_vars silver-proposals-backend \
-  AWS_REGION us-east-1 \
+  AWS_REGION us-east-2 \
   AWS_DEPLOY_ROLE_ARN "$(value "$outputs" backend_deploy_role_arn)" \
   ECR_REPOSITORY_URL "$(value "$shared" ecr_repository_url)" \
   ECS_CLUSTER "$(value "$outputs" ecs_cluster_name)" \
@@ -43,7 +43,7 @@ set_vars silver-proposals-backend \
   API_URL "$(value "$outputs" api_url)"
 
 set_vars silver-proposals-frontend \
-  AWS_REGION us-east-1 \
+  AWS_REGION us-east-2 \
   AWS_DEPLOY_ROLE_ARN "$(value "$outputs" frontend_deploy_role_arn)" \
   S3_BUCKET "$(value "$outputs" frontend_bucket_name)" \
   CLOUDFRONT_DISTRIBUTION_ID "$(value "$outputs" cloudfront_distribution_id)" \

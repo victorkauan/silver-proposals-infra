@@ -196,8 +196,8 @@ variable "alerts_topic_arn" {
   type        = string
 }
 
-variable "archive_operator_name" {
-  description = "IAM operator authorized to read backup objects with temporary credentials."
+variable "archive_operator_role_name" {
+  description = "IAM role (with path) of the operator authorized to read backup objects with temporary credentials."
   type        = string
-  default     = "victor-admin"
+  default     = "managed/AccountFullAccessRole"
 }

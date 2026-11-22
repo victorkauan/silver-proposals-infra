@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "access_logs" {
       variable = "aws:PrincipalArn"
       values = [
         "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:root",
-        "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:user/${var.archive_operator_name}",
+        "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/${var.archive_operator_role_name}",
       ]
     }
   }

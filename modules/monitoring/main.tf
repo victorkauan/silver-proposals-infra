@@ -174,22 +174,6 @@ resource "aws_cloudwatch_metric_alarm" "errors" {
   ok_actions          = local.actions
 }
 
-resource "aws_cloudwatch_metric_alarm" "frontend_5xx" {
-  alarm_name          = "${local.name}-app-5xx"
-  alarm_description   = "More than 5% of the ${var.environment} app's requests failed with 5xx for 15 minutes."
-  namespace           = "AWS/CloudFront"
-  metric_name         = "5xxErrorRate"
-  dimensions          = { DistributionId = var.distribution_id, Region = "Global" }
-  statistic           = "Average"
-  period              = 300
-  evaluation_periods  = 3
-  comparison_operator = "GreaterThanThreshold"
-  threshold           = 5
-  treat_missing_data  = "notBreaching"
-  alarm_actions       = local.actions
-  ok_actions          = local.actions
-}
-
 # ---------------------------------------------------------------- dashboard
 
 locals {
@@ -273,7 +257,17 @@ locals {
           aws_cloudwatch_metric_alarm.memory.arn,
           aws_cloudwatch_metric_alarm.generation_failures.arn,
           aws_cloudwatch_metric_alarm.errors.arn,
-          aws_cloudwatch_metric_alarm.frontend_5xx.arn,
+        ]
+      }
+    },
+    {
+      # CloudFront publishes metrics only in us-east-1, where the account's AWS-managed policy forbids alarms, so the app's errors are a chart, not an alarm.
+      type = "metric", x = 0, y = 21, width = 24, height = 6
+      properties = {
+        title = "App requests and 5xx error rate (CloudFront)", region = "us-east-1", period = 300
+        metrics = [
+          ["AWS/CloudFront", "Requests", "DistributionId", var.distribution_id, "Region", "Global", { stat = "Sum" }],
+          [".", "5xxErrorRate", ".", ".", ".", ".", { stat = "Average", yAxis = "right" }],
         ]
       }
     },

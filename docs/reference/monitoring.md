@@ -8,7 +8,9 @@ another when they recover.
 
 One CloudWatch dashboard per environment, `silver-proposals-staging` and `silver-proposals-prod`: API requests and
 errors, latency (p50/p95), healthy targets, ECS CPU and memory, proposal generations (count, failures, Bedrock
-latency), the shared database, recent errors from the logs, and the state of every alarm.
+latency), the shared database, recent errors from the logs, the state of every alarm, and the app's CloudFront
+requests and 5xx rate. The app has no alarm: CloudFront metrics exist only in us-east-1, where the account forbids
+alarms ([ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)).
 
 ## Alarms
 
@@ -20,7 +22,6 @@ latency), the shared database, recent errors from the logs, and the state of eve
 | `silver-proposals-<env>-api-cpu` / `-api-memory` | CPU above 80% / memory above 85% for 15 minutes | traffic on the dashboard; raise `cpu` or `memory` of the task if it is steady |
 | `silver-proposals-<env>-generation-failures` | 3 or more failed generations in 15 minutes | `generation_failed` log lines (`error_code`): Bedrock throttling, timeouts, or access |
 | `silver-proposals-<env>-api-errors` | 5 or more `ERROR` log lines in 5 minutes | the dashboard's "Recent API errors" |
-| `silver-proposals-<env>-app-5xx` | more than 5% of the app's CloudFront requests fail for 15 minutes | the S3 bucket and the latest frontend deploy |
 | `silver-proposals-db-cpu` / `-db-memory` | database CPU above 80% / freeable memory below 32 MiB for 15 minutes (it normally keeps 50 to 60 MiB free) | slow queries in the database log group; consider a larger instance class |
 | `silver-proposals-db-storage` | free storage below 2 GiB | storage autoscaling (up to 50 GiB) should act first |
 | `silver-proposals-db-connections` | more than 60 connections | connection leaks; both environments share the instance |

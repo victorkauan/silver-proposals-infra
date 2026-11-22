@@ -2,9 +2,9 @@
 # docs/runbooks/terraform-state-bootstrap.md for the one-time migration.
 terraform {
   backend "s3" {
-    bucket       = "silversoft-silver-proposals-tfstate"
+    bucket       = "silversoft-silver-proposals-tfstate-v2"
     key          = "bootstrap/terraform.tfstate"
-    region       = "us-east-1"
+    region       = "us-east-2"
     encrypt      = true
     use_lockfile = true
   }

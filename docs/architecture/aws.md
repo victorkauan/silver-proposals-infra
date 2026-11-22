@@ -1,6 +1,7 @@
 # AWS architecture
 
-Everything runs in one AWS account in **us-east-1**. DNS stays on Cloudflare (DNS only, no proxy, no Route 53
+Everything runs in one AWS account in **us-east-2**, except the CloudFront certificates, which CloudFront requires in us-east-1
+([ADR-0005](../adr/0005-move-to-a-project-account-in-us-east-2.md)). DNS stays on Cloudflare (DNS only, no proxy, no Route 53
 hosted zone). Why the load balancer and the database are shared:
 [ADR-0003](../adr/0003-share-the-load-balancer-and-database-between-environments.md).
 

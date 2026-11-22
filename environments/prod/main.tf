@@ -1,6 +1,6 @@
 locals {
   environment = "prod"
-  region      = "us-east-1"
+  region      = "us-east-2"
 }
 
 provider "aws" {
@@ -22,7 +22,7 @@ data "terraform_remote_state" "shared" {
   backend = "s3"
 
   config = {
-    bucket = "silversoft-silver-proposals-tfstate"
+    bucket = "silversoft-silver-proposals-tfstate-v2"
     key    = "shared/terraform.tfstate"
     region = local.region
   }

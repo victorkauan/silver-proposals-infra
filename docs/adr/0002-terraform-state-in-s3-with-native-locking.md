@@ -33,7 +33,7 @@ HashiCorp deprecated DynamoDB-based locking in favor of this, so it removes a re
 losing any guarantee. HCP Terraform would add an external account and a token to manage.
 
 - **Layout:** `bootstrap/terraform.tfstate`, `staging/terraform.tfstate`, and `prod/terraform.tfstate` in
-  `silversoft-silver-proposals-tfstate` (us-east-1). Each environment is its own root module with its own key.
+  `silversoft-silver-proposals-tfstate-v2` (us-east-2). Each environment is its own root module with its own key.
 - **Protection:** versioning (previous versions kept for 90 days), SSE-S3 encryption, all public access blocked, ACLs
   disabled, and `prevent_destroy` on the bucket.
 - **Access:** the bucket policy denies requests without TLS and denies every principal except the operators and the CI

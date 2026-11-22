@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-2"
 
   default_tags {
     tags = {
@@ -14,16 +14,18 @@ data "aws_caller_identity" "current" {}
 
 data "aws_partition" "current" {}
 
+data "aws_region" "current" {}
+
 locals {
   account_arn   = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}"
-  operator_arns = [for name in var.operator_user_names : "${local.account_arn}:user/${name}"]
+  operator_arns = [for name in var.operator_role_names : "${local.account_arn}:role/${name}"]
   ci_role_arn   = "${local.account_arn}:role/${var.ci_role_prefix}-*"
 }
 
 resource "aws_s3_bucket" "state" {
   #checkov:skip=CKV_AWS_145:SSE-S3 is enough for a single-account project; a customer-managed KMS key adds cost and a key policy without extra protection here.
   #checkov:skip=CKV_AWS_18:Access is limited to the operators and the CI roles by the bucket policy; audit logging is covered by the observability work.
-  #checkov:skip=CKV_AWS_144:Single-region decision (us-east-1); versioning covers recovery from bad writes.
+  #checkov:skip=CKV_AWS_144:Single-region decision (us-east-2); versioning covers recovery from bad writes.
   #checkov:skip=CKV2_AWS_62:Nothing needs to react to state writes.
   bucket = var.state_bucket_name
 

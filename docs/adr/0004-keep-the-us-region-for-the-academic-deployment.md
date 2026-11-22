@@ -1,5 +1,7 @@
 # ADR-0004 Keep the US region for the academic deployment
 
+> Amended by [ADR-0005](0005-move-to-a-project-account-in-us-east-2.md): the workload now runs in us-east-2.
+
 ## Context
 
 RDS, ECS, the ALB and the operational archives run in us-east-1. The Nova 2 Lite US inference profile can route text processing to more than one US region. Account records and proposal content can contain Brazilian personal data. The processing purpose and legal basis are documented in the [data processing record](../security/data-processing.md). International transfer is a separate obligation under LGPD art. 33.

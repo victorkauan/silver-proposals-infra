@@ -9,7 +9,7 @@ usage() {
 
 [[ $# -eq 1 ]] || usage
 action=$1
-region=${AWS_REGION:-us-east-1}
+region=${AWS_REGION:-us-east-2}
 prefix=silver-proposals
 db=$prefix
 environments=(staging prod)

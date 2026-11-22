@@ -1,13 +1,14 @@
 variable "state_bucket_name" {
   description = "Globally unique name of the S3 bucket that stores every Terraform state of the project."
   type        = string
-  default     = "silversoft-silver-proposals-tfstate"
+  default     = "silversoft-silver-proposals-tfstate-v2"
 }
 
-variable "operator_user_names" {
-  description = "IAM users allowed to read and write the state from a workstation (human operators)."
+variable "operator_role_names" {
+  description = "IAM roles (with path) that human operators assume through aws login to read and write the state from a workstation."
   type        = list(string)
-  default     = ["victor-admin"]
+  # The account's AWS-managed policies forbid IAM users with console passwords; operators sign in through this AWS-managed role.
+  default = ["managed/AccountFullAccessRole"]
 }
 
 variable "ci_role_prefix" {

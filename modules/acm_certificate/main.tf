@@ -1,4 +1,5 @@
 resource "aws_acm_certificate" "this" {
+  region                    = var.region
   domain_name               = var.domain_names[0]
   subject_alternative_names = slice(var.domain_names, 1, length(var.domain_names))
   validation_method         = "DNS"
@@ -23,6 +24,7 @@ resource "cloudflare_dns_record" "validation" {
 }
 
 resource "aws_acm_certificate_validation" "this" {
+  region                  = var.region
   certificate_arn         = aws_acm_certificate.this.arn
   validation_record_fqdns = [for record in cloudflare_dns_record.validation : record.name]
 }
