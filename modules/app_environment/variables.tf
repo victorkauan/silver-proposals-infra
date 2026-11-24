@@ -79,3 +79,9 @@ variable "initialize_app_secret" {
   type        = bool
   default     = false
 }
+
+variable "api_cpu" {
+  description = "CPU units of an API task (256 = 0.25 vCPU, 512 = 0.5 vCPU)."
+  type        = number
+  default     = 256
+}
