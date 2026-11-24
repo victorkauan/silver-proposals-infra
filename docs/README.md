@@ -10,6 +10,7 @@
 | [AWS architecture](architecture/aws.md) | Explanation |
 | [Apply the AWS environments](runbooks/apply-environments.md) | Runbook |
 | [Release to production](runbooks/release-to-production.md) | Runbook |
+| [Load test of the generation endpoint](runbooks/load-test.md) | Runbook |
 | [Pause and resume the project](runbooks/pause-and-resume.md) | Runbook |
 | [Security hardening rollout](runbooks/security-hardening.md) | Runbook |
 | [Restore a database backup](runbooks/database-restore.md) | Runbook |

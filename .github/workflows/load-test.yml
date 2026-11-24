@@ -1,0 +1,84 @@
+name: Load test
+
+# Manual only. Each runner is a separate source IP, so N runners keep 10 x N generations in flight
+# without tripping the API's per-IP limit (10 generations per minute).
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: API URL
+        default: https://api-staging.silversoft.com.br
+      host_ip:
+        description: Optional IP to send the API host name to (bypasses DNS)
+        default: ""
+      runners:
+        description: Number of runners (1 to 10)
+        default: "2"
+      vus:
+        description: Generations in flight per runner (at most 10)
+        default: "10"
+      duration:
+        description: Duration of the load on each runner
+        default: 3m
+
+permissions:
+  contents: read
+
+env:
+  K6_VERSION: v2.3.0
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      runners: ${{ steps.runners.outputs.list }}
+      start_at: ${{ steps.runners.outputs.start_at }}
+    steps:
+      - id: runners
+        env:
+          RUNNERS: ${{ inputs.runners }}
+          VUS: ${{ inputs.vus }}
+        run: |
+          [[ "$RUNNERS" =~ ^([1-9]|10)$ ]] || { echo "runners must be 1 to 10" >&2; exit 1; }
+          [[ "$VUS" =~ ^([1-9]|10)$ ]] || { echo "vus must be 1 to 10" >&2; exit 1; }
+          echo "list=$(seq -s, 1 "$RUNNERS" | sed 's/.*/[&]/')" >> "$GITHUB_OUTPUT"
+          # Every runner starts the load at the same moment, so the generations overlap.
+          echo "start_at=$(( $(date +%s) + 300 ))" >> "$GITHUB_OUTPUT"
+
+  load:
+    needs: matrix
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ${{ fromJSON(needs.matrix.outputs.runners) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install k6
+        run: |
+          base="https://github.com/grafana/k6/releases/download/${K6_VERSION}"
+          curl -fsSLO "$base/k6-${K6_VERSION}-linux-amd64.tar.gz"
+          curl -fsSLO "$base/k6-${K6_VERSION}-checksums.txt"
+          grep " k6-${K6_VERSION}-linux-amd64.tar.gz$" "k6-${K6_VERSION}-checksums.txt" | sha256sum -c -
+          tar -xzf "k6-${K6_VERSION}-linux-amd64.tar.gz" --strip-components=1 -C /usr/local/bin "k6-${K6_VERSION}-linux-amd64/k6"
+
+      - name: Run
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          HOST_IP: ${{ inputs.host_ip }}
+          VUS: ${{ inputs.vus }}
+          DURATION: ${{ inputs.duration }}
+          RUNNER: ${{ matrix.runner }}
+          START_AT: ${{ needs.matrix.outputs.start_at }}
+        run: |
+          # setup() registers a user and creates the proposals first; the load waits for the common start time.
+          delay=$(( START_AT - $(date +%s) ))
+          export START_DELAY="$(( delay > 0 ? delay : 0 ))s"
+          k6 run --summary-export "summary-${RUNNER}.json" tests/load/generation.js
+
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: summary-${{ matrix.runner }}
+          path: summary-${{ matrix.runner }}.json
