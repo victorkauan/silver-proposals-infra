@@ -39,7 +39,6 @@ module "environment" {
   listener_rule_priority = 200
   image_tag              = var.image_tag
   desired_count          = var.desired_count
-  api_cpu                = 512
   initialize_app_secret  = var.initialize_app_secret
 
   shared = {
