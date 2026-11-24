@@ -118,4 +118,26 @@
       ];
     },
   });
+  /* decisões de segurança e infraestrutura */
+  const DEC = [
+    ['nokey', 'Nenhuma chave estática', 'em vez de chaves de acesso', 'OIDC na esteira e papel IAM na tarefa: não há segredo de nuvem para vazar'],
+    ['lock', 'Bedrock pelo papel IAM', 'em vez de uma API de IA com chave', 'dados não compartilhados com o fornecedor do modelo'],
+    ['check', 'ECS Fargate', 'em vez de EKS ou EC2', 'contêineres sem gerenciar servidores nem um cluster Kubernetes'],
+    ['eye', 'Sem NAT Gateway', 'em vez de sub-redes privadas com NAT', 'US$ 33/mês a menos; as tarefas só aceitam o balanceador'],
+    ['doc', 'Balanceador e banco compartilhados', 'em vez de ambientes separados', 'US$ 66 contra US$ 106/mês, com banco, usuário e segredos por ambiente'],
+    ['bell', 'WAF só na API', 'em vez de WAF também no CloudFront', 'a API concentra login, geração e links; US$ 8/mês por ACL'],
+  ];
+  S.push({
+    id: 'decisoes', act: 'Solução', name: 'Decisões de segurança e infraestrutura',
+    title: 'Cada decisão de segurança e infraestrutura tem <em>alternativa e motivo</em>',
+    html: `
+      <div class="body">
+        <div class="dec">${DEC.map(([ic, t, alt, why], i) => `
+          <div class="dec-i rv" data-at="0" style="--d:${i * 0.12}s">${K.icon(ic)}<div><b>${t}</b><em>${alt}</em><span>${why}</span></div></div>`).join('')}
+        </div>
+        <div class="finding rv" data-at="1">${K.icon('doc')}<span><b>Registradas como ADRs</b> nos repositórios, com as alternativas avaliadas; na esteira, ações fixadas por hash e dependências só depois de 14 dias da publicação.</span></div>
+      </div>`,
+    note: 'Tabela 5 do relatório (matriz de decisões). Custos com preços sob demanda em us-east-1.',
+    setup() { return [{ dur: 0, draw() {} }, { dur: 0, draw() {} }]; },
+  });
 })();
