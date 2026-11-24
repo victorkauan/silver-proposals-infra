@@ -125,4 +125,43 @@
       ];
     },
   });
+  /* escalabilidade e teste de carga */
+  const LOAD = [
+    { v: 15, d: 0, lbl: 'gerações simultâneas por tarefa', sub: 'limite real antes da correção: o pool do banco' },
+    { v: 100, d: 0, suf: '%', lbl: 'de CPU com 20 simultâneas', sub: 'o próximo limite: tarefa de 0,25 vCPU' },
+    { v: 20, d: 0, suf: '/min', lbl: 'gerações na cota do modelo', sub: 'o teto da conta no Bedrock; acima dele, há throttling' },
+  ];
+  S.push({
+    id: 'carga', act: 'Resultados', name: 'Escalabilidade e teste de carga',
+    title: 'Sob carga, o teste achou um <em>gargalo escondido</em> e mostrou os próximos limites',
+    html: `
+      <div class="body">
+        <div class="nums ev">${LOAD.map((n, i) => `
+          <div class="n rv" data-at="0" style="--d:${i * 0.12}s"><div class="num"><span class="v">0</span>${n.suf ? `<small>${n.suf}</small>` : ''}</div><p class="lbl">${n.lbl}</p><p class="src">${n.sub}</p></div>`).join('')}
+        </div>
+        <div class="cost rv" data-at="1">
+          <div class="cost-hd">gerações concluídas com 20 usuários simultâneos · k6 em staging · 1 tarefa</div>
+          <div class="cb"><span class="cb-l">antes da correção</span><div class="cb-t"><i class="cb-a"></i></div><span class="cb-v mono">70%</span></div>
+          <div class="cb"><span class="cb-l">depois da correção</span><div class="cb-t"><i class="cb-b"></i></div><span class="cb-v mono v-b">70%</span></div>
+        </div>
+        <div class="finding rv" data-at="2">${K.icon('eye')}<span><b>Cada geração prendia uma conexão do banco durante toda a transmissão.</b> A correção passou pela esteira, com um teste que garante a transmissão sem conexão presa; duas tarefas ou o dobro de CPU reduzem a latência à metade.</span></div>
+      </div>`,
+    note: 'Seção 3.7.2 do relatório. Carga de vários executores do GitHub Actions, porque a API aceita 10 gerações por minuto por IP. Meta (RNF05): 20 simultâneas, menos de 1% de falhas e p95 do primeiro byte abaixo de 5 s; atendida na conclusão, não na latência.',
+    setup(c) {
+      const vs = c.$$('.n .v'), a = c.$('.cb-a'), b = c.$('.cb-b'), vb = c.$('.v-b');
+      a.style.width = '70%';
+      return [
+        { dur: 1500, draw(p) { vs.forEach((el, i) => K.count(el, LOAD[i].v, K.seg(p, i * 0.08, 0.7 + i * 0.08), LOAD[i].d)); } },
+        {
+          dur: 1800,
+          draw(p) {
+            const t = K.ease.io(K.seg(p, 0.25, 1));
+            b.style.width = K.lerp(70, 100, t) + '%';
+            vb.textContent = Math.round(K.lerp(70, 100, t)) + '%';
+          },
+        },
+        { dur: 600, draw() {} },
+      ];
+    },
+  });
 })();
